@@ -1,0 +1,615 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		5BEBF2382D08F694006E53DB /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = 5BEBF2372D08F694006E53DB /* GoogleMobileAds */; settings = {ATTRIBUTES = (Required, ); }; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		5BD576512CD19CFA00493D1A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 5BD576362CD19CF800493D1A /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 5BD5763D2CD19CF800493D1A;
+			remoteInfo = "How Lucky";
+		};
+		5BD5765B2CD19CFA00493D1A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 5BD576362CD19CF800493D1A /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 5BD5763D2CD19CF800493D1A;
+			remoteInfo = "How Lucky";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		5BD5763E2CD19CF800493D1A /* How Lucky.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "How Lucky.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		5BD576502CD19CFA00493D1A /* How LuckyTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "How LuckyTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		5BD5765A2CD19CFA00493D1A /* How LuckyUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "How LuckyUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		5BD576402CD19CF800493D1A /* How Lucky */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "How Lucky";
+			sourceTree = "<group>";
+		};
+		5BD576532CD19CFA00493D1A /* How LuckyTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "How LuckyTests";
+			sourceTree = "<group>";
+		};
+		5BD5765D2CD19CFA00493D1A /* How LuckyUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "How LuckyUITests";
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		5BD5763B2CD19CF800493D1A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5BEBF2382D08F694006E53DB /* GoogleMobileAds in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5BD5764D2CD19CFA00493D1A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5BD576572CD19CFA00493D1A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		5BD576352CD19CF800493D1A = {
+			isa = PBXGroup;
+			children = (
+				5BD576402CD19CF800493D1A /* How Lucky */,
+				5BD576532CD19CFA00493D1A /* How LuckyTests */,
+				5BD5765D2CD19CFA00493D1A /* How LuckyUITests */,
+				5BEBF2362D08F694006E53DB /* Frameworks */,
+				5BD5763F2CD19CF800493D1A /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		5BD5763F2CD19CF800493D1A /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				5BD5763E2CD19CF800493D1A /* How Lucky.app */,
+				5BD576502CD19CFA00493D1A /* How LuckyTests.xctest */,
+				5BD5765A2CD19CFA00493D1A /* How LuckyUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		5BEBF2362D08F694006E53DB /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		5BD5763D2CD19CF800493D1A /* How Lucky */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5BD576642CD19CFA00493D1A /* Build configuration list for PBXNativeTarget "How Lucky" */;
+			buildPhases = (
+				5BD5763A2CD19CF800493D1A /* Sources */,
+				5BD5763B2CD19CF800493D1A /* Frameworks */,
+				5BD5763C2CD19CF800493D1A /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				5BD576402CD19CF800493D1A /* How Lucky */,
+			);
+			name = "How Lucky";
+			packageProductDependencies = (
+				5BEBF2372D08F694006E53DB /* GoogleMobileAds */,
+			);
+			productName = "How Lucky";
+			productReference = 5BD5763E2CD19CF800493D1A /* How Lucky.app */;
+			productType = "com.apple.product-type.application";
+		};
+		5BD5764F2CD19CFA00493D1A /* How LuckyTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5BD576672CD19CFA00493D1A /* Build configuration list for PBXNativeTarget "How LuckyTests" */;
+			buildPhases = (
+				5BD5764C2CD19CFA00493D1A /* Sources */,
+				5BD5764D2CD19CFA00493D1A /* Frameworks */,
+				5BD5764E2CD19CFA00493D1A /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				5BD576522CD19CFA00493D1A /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				5BD576532CD19CFA00493D1A /* How LuckyTests */,
+			);
+			name = "How LuckyTests";
+			packageProductDependencies = (
+			);
+			productName = "How LuckyTests";
+			productReference = 5BD576502CD19CFA00493D1A /* How LuckyTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		5BD576592CD19CFA00493D1A /* How LuckyUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5BD5766A2CD19CFA00493D1A /* Build configuration list for PBXNativeTarget "How LuckyUITests" */;
+			buildPhases = (
+				5BD576562CD19CFA00493D1A /* Sources */,
+				5BD576572CD19CFA00493D1A /* Frameworks */,
+				5BD576582CD19CFA00493D1A /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				5BD5765C2CD19CFA00493D1A /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				5BD5765D2CD19CFA00493D1A /* How LuckyUITests */,
+			);
+			name = "How LuckyUITests";
+			packageProductDependencies = (
+			);
+			productName = "How LuckyUITests";
+			productReference = 5BD5765A2CD19CFA00493D1A /* How LuckyUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		5BD576362CD19CF800493D1A /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1610;
+				LastUpgradeCheck = 1610;
+				TargetAttributes = {
+					5BD5763D2CD19CF800493D1A = {
+						CreatedOnToolsVersion = 16.1;
+					};
+					5BD5764F2CD19CFA00493D1A = {
+						CreatedOnToolsVersion = 16.1;
+						TestTargetID = 5BD5763D2CD19CF800493D1A;
+					};
+					5BD576592CD19CFA00493D1A = {
+						CreatedOnToolsVersion = 16.1;
+						TestTargetID = 5BD5763D2CD19CF800493D1A;
+					};
+				};
+			};
+			buildConfigurationList = 5BD576392CD19CF800493D1A /* Build configuration list for PBXProject "How Lucky" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 5BD576352CD19CF800493D1A;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				5BEBF22F2D08EE82006E53DB /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 5BD5763F2CD19CF800493D1A /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				5BD5763D2CD19CF800493D1A /* How Lucky */,
+				5BD5764F2CD19CFA00493D1A /* How LuckyTests */,
+				5BD576592CD19CFA00493D1A /* How LuckyUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		5BD5763C2CD19CF800493D1A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5BD5764E2CD19CFA00493D1A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5BD576582CD19CFA00493D1A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		5BD5763A2CD19CF800493D1A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5BD5764C2CD19CFA00493D1A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5BD576562CD19CFA00493D1A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		5BD576522CD19CFA00493D1A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 5BD5763D2CD19CF800493D1A /* How Lucky */;
+			targetProxy = 5BD576512CD19CFA00493D1A /* PBXContainerItemProxy */;
+		};
+		5BD5765C2CD19CFA00493D1A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 5BD5763D2CD19CF800493D1A /* How Lucky */;
+			targetProxy = 5BD5765B2CD19CFA00493D1A /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		5BD576622CD19CFA00493D1A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.1;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		5BD576632CD19CFA00493D1A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.1;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		5BD576652CD19CFA00493D1A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"How Lucky/Preview Content\"";
+				DEVELOPMENT_TEAM = YY4QZ9BB2G;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "How-Lucky-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "How Lucky";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.strategy-games";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.foowibble.How-Lucky";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		5BD576662CD19CFA00493D1A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"How Lucky/Preview Content\"";
+				DEVELOPMENT_TEAM = YY4QZ9BB2G;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "How-Lucky-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "How Lucky";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.strategy-games";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.foowibble.How-Lucky";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		5BD576682CD19CFA00493D1A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.peyton.white.How-LuckyTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/How Lucky.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/How Lucky";
+			};
+			name = Debug;
+		};
+		5BD576692CD19CFA00493D1A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.peyton.white.How-LuckyTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/How Lucky.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/How Lucky";
+			};
+			name = Release;
+		};
+		5BD5766B2CD19CFA00493D1A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.peyton.white.How-LuckyUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = "How Lucky";
+			};
+			name = Debug;
+		};
+		5BD5766C2CD19CFA00493D1A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.peyton.white.How-LuckyUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = "How Lucky";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		5BD576392CD19CF800493D1A /* Build configuration list for PBXProject "How Lucky" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5BD576622CD19CFA00493D1A /* Debug */,
+				5BD576632CD19CFA00493D1A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		5BD576642CD19CFA00493D1A /* Build configuration list for PBXNativeTarget "How Lucky" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5BD576652CD19CFA00493D1A /* Debug */,
+				5BD576662CD19CFA00493D1A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		5BD576672CD19CFA00493D1A /* Build configuration list for PBXNativeTarget "How LuckyTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5BD576682CD19CFA00493D1A /* Debug */,
+				5BD576692CD19CFA00493D1A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		5BD5766A2CD19CFA00493D1A /* Build configuration list for PBXNativeTarget "How LuckyUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5BD5766B2CD19CFA00493D1A /* Debug */,
+				5BD5766C2CD19CFA00493D1A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		5BEBF22F2D08EE82006E53DB /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/googleads/swift-package-manager-google-mobile-ads.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 11.13.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		5BEBF2372D08F694006E53DB /* GoogleMobileAds */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 5BEBF22F2D08EE82006E53DB /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */;
+			productName = GoogleMobileAds;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 5BD576362CD19CF800493D1A /* Project object */;
+}
