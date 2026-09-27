@@ -22,7 +22,7 @@ struct PowerUpView: View {
             VStack {
                 if powerUp.costOfCoins != 0 {
                     HStack(spacing:3) {
-                        Spacer() // Pushes the "coins" content to the right
+                        Spacer()
                         Text("\(powerUp.costOfCoins)")
                             .font(.headline)
                             .foregroundStyle(.yellow)

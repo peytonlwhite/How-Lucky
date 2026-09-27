@@ -11,7 +11,6 @@ import SwiftData
 @main
 struct How_LuckyApp: App {
     
-    
     var body: some Scene {
         WindowGroup {
             SplashView()
@@ -19,30 +18,36 @@ struct How_LuckyApp: App {
         .modelContainer(appContainer)
     }
     
-    
     @MainActor
     let appContainer: ModelContainer = {
         do {
-            print("in app container")
             let container = try ModelContainer(for: User.self)
             
-            // Make sure the persistent store is empty. If it's not, return the non-empty container.
+            // Make sure the persistent store is not empty
             var itemFetchDescriptor = FetchDescriptor<User>()
             itemFetchDescriptor.fetchLimit = 1
             
-            print("checking store")
-            guard try container.mainContext.fetch(itemFetchDescriptor).count == 0 else { return container }
+            // Fetch the existing user
+            guard let user = try container.mainContext.fetch(itemFetchDescriptor).first else {
+                // If no user is found, insert a mock user and return the container
+                let newUser = MockData.initUser
+                container.mainContext.insert(newUser)
+                return container
+            }
             
-            // This code will only run if the persistent store is empty.
-            let user = MockData.initUser
-            print("persistent store is empty")
-            container.mainContext.insert(user)
+            // Check if the new property exists and initialize if missing and pull from mock data
+            /*
+            if user.luckySquaresStats?.newPowerUpStat == nil {
+                // Initialize the missing property with default values
+                user.luckySquaresStats?.newPowerUpStat = PowerUpStat() // Replace this with your default initialization
+            }
+             */
+            
+            // Add other checks for new fields or properties you added
             
             return container
         } catch {
             fatalError("Failed to create container")
         }
     }()
-  
 }
-

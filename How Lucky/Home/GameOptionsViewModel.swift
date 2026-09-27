@@ -16,7 +16,6 @@ class GameOptionsViewModel:ObservableObject {
     private let dataSource: UserService
         
     init(dataSource: UserService) {
-        print("init optionv eiw model")
         self.dataSource = dataSource
               
         users = dataSource.fetchUsers()

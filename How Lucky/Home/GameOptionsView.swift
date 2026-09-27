@@ -8,71 +8,145 @@
 import SwiftUI
 import SwiftData
 import os.log
+import GoogleMobileAds
 
 struct GameOptionsView: View {
     
     @Environment(\.modelContext) var context
+    //For UI work non prod
+    //var users: [User] = [MockData.defUser]
     @Query var users: [User]
     @State var showingPopupCoins: Bool = false
-
+    
     let logger = Logger(subsystem: "com.peyton.white", category: "Debug")
-
-   
-    var body: some View {
+    
+    
+    //MARK: - ad properties
+    @StateObject var rewardViewModel = RewardedViewModel()
+    
+    
+    struct BannerAdView: UIViewRepresentable {
+        var bannerView: GADBannerView
         
+        func makeUIView(context: Context) -> GADBannerView {
+            return bannerView
+        }
+        
+        func updateUIView(_ uiView: GADBannerView, context: Context) {
+            // Any updates can be handled here.
+        }
+    }
+    
+    
+    
+    var body: some View {
         ZStack {
             NavigationStack {
-               
                 VStack(alignment:.leading, spacing: 1) {
-                    Text("How Lucky")
+                    Text("Lucky Logic")
                         .font(.largeTitle)
                         .fontWeight(.bold)
-                
+                    
                     Image("cloverLogo")
                         .resizable()
                         .scaledToFill()
                         .frame(width: 150, height: 300)
+
                 }
                 .padding(.top,30)
                 
                 
-                NavigationLink { 
+                
+                
+                NavigationLink {
                     UserScoresView(user:users[0])
                 } label: {
                     GameLabelView(label: "Personal Scores", description: "Scores & Records in games", color: Color(hex: "#FF6B6B"))
                 }
-                 
+                
                 NavigationLink {
                     LuckySquaresGameBoard(user:users[0], powerUps: getPowerUps(game:"1"))
                 } label: {
-                    GameLabelView(label: "Lucky Squares",description: "Only one square is the correct choice each turn. The square changes at random each guess. Use Power Ups and luck to break highscores", color: Color(hex: "#FFD93D"))
+                    GameLabelView(label: "Lucky Squares",description: MockData.luckySquaresDescription, color: Color(hex: "#FFD93D"))
                 }
                 
                 NavigationLink {
                     LuckyCirclesGameBoard(user:users[0], powerUps: getPowerUps(game:"2"))
                 } label: {
-                    GameLabelView(label: "Lucky Circles", description: "Only one circle is the correct choice each turn. Use Power Ups and luck to break highscores", color: Color(hex: "#4ECDC4"))
+                    GameLabelView(label: "Lucky Circles", description: MockData.luckyCirclesDescription, color: Color(hex: "#4ECDC4"))
+                }
+                /*
+                 NavigationLink {
+                 LuckyShapesGameBoard(user:users[0], powerUps: getPowerUps(game:"3"))
+                 } label: {
+                 GameLabelView(label: "Lucky Patterns", description: "A pattern will flash. You follow that pattern", color: Color(hex: "#03fc88"))
+                 }
+                 */
+                
+                
+                VStack {
+                    Spacer()
+                    // Ad Banner
+                    if rewardViewModel.isBannerAdLoaded {
+                        BannerAdView(bannerView: rewardViewModel.getBannerAdView())
+                            .frame(width: UIScreen.main.bounds.width, height: 40)
+                            .padding(.bottom, 20)
+                            .background(Color.white)
+                            .cornerRadius(12)
+                            .shadow(radius: 5)
+                    }
+                }
+                .toolbar {
+                    // Toolbar Buttons
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button(action: {
+                            // Action for trailing button
+                            increaseUserCoins()
+                        }) {
+                            // Coin Display
+                            HStack {
+                                Text("\(users[0].coins!)")
+                                    .font(.title3)
+                                    .foregroundStyle(.white)
+                                    .bold()
+                                    .foregroundStyle(.yellow)
+                                Image(systemName: "c.circle")
+                                    .font(.title3)
+                                    .foregroundStyle(.yellow)
+                            }
+                            .padding(5)
+                            .background(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .fill(
+                                        LinearGradient(
+                                            gradient: Gradient(colors: [Color.orange.opacity(0.6), Color.orange]),
+                                            startPoint: .top,
+                                            endPoint: .bottom
+                                        )
+                                    )
+                            )
+                            .shadow(color: .black.opacity(0.2), radius: 5, x: 0, y: 3)
+                            
+                        }
+                    }
                 }
                 
-                NavigationLink {
-                    LuckyShapesGameBoard(user:users[0], powerUps: getPowerUps(game:"3"))
-                } label: {
-                    GameLabelView(label: "Lucky Patterns", description: "A pattern will flash. You follow that pattern", color: Color(hex: "#03fc88"))
-                }
                 
-               
+                
                 
             }
             
+            
             if showingPopupCoins {
-                    CustomDialog(isActive: $showingPopupCoins, title: "Free Coins", message: "Thanks for playing here are 5 free coins", buttonTitle: "Thanks, bye") {
+                CustomDialog(isActive: $showingPopupCoins, title: "Free Coins", message: "Thanks for playing here are 5 free coins", buttonTitle: "Thanks, bye") {
                 }
             }
         }
         .onAppear {
             logger.notice("\("TEST", privacy: .public)")
             logger.log("Appear")
-          
+            rewardViewModel.loadBannerAd()
+            
             if(users.count > 0) {
                 checkUserChecks()
             }
@@ -84,43 +158,80 @@ struct GameOptionsView: View {
 
 struct GameLabelView: View {
     var label: String
-    var description: String
+    var description: LocalizedStringKey
     var color: Color
     @State var viewOptionsIsShown = false
-
+    @Environment(\.colorScheme) var colorScheme
+    
     var body: some View {
         VStack {
-            Text(label)
-                .font(.title2)
-                .fontWeight(.semibold)
-                .foregroundStyle(.white)
-                .frame(width: 200, height: 50)
-                .background(
-                    RoundedRectangle(cornerRadius: 8)
-                        .foregroundStyle(color)
-                )
+            HStack {
+                Text(label)
+                    .font(.title2)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.white)
+                    .padding()
+                Spacer()
+                Button {
+                    viewOptionsIsShown = true
+                } label: {
+                    Image(systemName: "questionmark.circle")
+                        .font(.title2)
+                        .foregroundColor(.blue)
+                }
+            }
+            .padding()
+            
         }
+        .frame(height: 60)
+        .frame(maxWidth: 300)
+        .background(
+            LinearGradient(gradient: Gradient(colors: [color, color.opacity(0.8)]), startPoint: .topLeading, endPoint: .bottomTrailing)
+                .cornerRadius(15)
+                .shadow(radius: 10)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 15)
+                .stroke(Color.white.opacity(0.6), lineWidth: 2)
+        )
+        .scaleEffect(viewOptionsIsShown ? 1.1 : 1) // Add a slight scale effect on press
+        .animation(.spring(), value: viewOptionsIsShown)
+        .padding(.horizontal, 20)
         .simultaneousGesture(
             LongPressGesture(minimumDuration: 0.6)
-                .onEnded {_ in
+                .onEnded { _ in
                     viewOptionsIsShown = true
                 }
         )
         .popover(isPresented: $viewOptionsIsShown, arrowEdge: .top) {
             ZStack {
-                Text("\(description)")
-                    .presentationCompactAdaptation(.popover)
-                    .foregroundStyle(.gray)
-                    .frame(height:100)
+                // Display the rules as Text
+                ScrollView {
+                    Text(description)
+                        .font(.body)
+                        .foregroundStyle(colorScheme == .dark ? .white :  .black)
+                        .padding()
+                }
+                
             }
             .padding()
         }
-      
     }
 }
 
 
 private extension GameOptionsView {
+    
+    func increaseUserCoins() {
+        if(users[0].coins! < 25) {
+            users[0].coins = users[0].coins! + 1
+        }
+    }
+    
+    func increaseUserCoinsByAmount(amount:Int) {
+            users[0].coins = users[0].coins! + amount
+    }
+    
     func getPowerUps(game:String) -> [PowerUp] {
         if(game=="1") {
             return MockData.squarePowerUps
@@ -134,14 +245,12 @@ private extension GameOptionsView {
     
     func checkUserChecks() {
         
-        print("user checks")
-        
         let currentDate = Date()
-
+        
         guard let diffInHours = Calendar.current.dateComponents([.hour, .minute], from: users[0].appLastOpened!, to: currentDate).hour
         else { return }
-     
-
+        
+        
         logger.info("curent date: \(currentDate)")
         logger.info("users[0].appLastOpened: \(String(describing: users[0].appLastOpened))")
         logger.info("diff in hours \(diffInHours)")

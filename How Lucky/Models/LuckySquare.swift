@@ -15,12 +15,15 @@ import Observation
     let name:String
     let color:Color
     var isDisabled:Bool
+    var isFlashing: Bool
+       
     
-    init(id: String, name:String, color: Color, isDisabled: Bool) {
+    init(id: String, name:String, color: Color, isDisabled: Bool, isFlashing: Bool = false) {
         self.id = id
         self.name = name
         self.color = color
         self.isDisabled = isDisabled
+        self.isFlashing = isFlashing
     }
     
     

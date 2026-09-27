@@ -14,15 +14,20 @@ final class LuckySquaresStats {
     var powerUpsUsedForHighscore: Int
     var totalTimesPlayed: Int
     var totalTimesIncorrectInRow: Int
-
     var powerUpStats:[PowerUpStats]
-    
-    init(highScore: Int, powerUpsUsedForHighscore: Int, totalTimesPlayed: Int, totalTimesIncorrectInRow: Int, powerUpStats: [PowerUpStats]) {
+    var coinsWon: Int?
+    var coinsLost: Int?
+    var coinsWagered: Int?
+
+    init(highScore: Int, powerUpsUsedForHighscore: Int, totalTimesPlayed: Int, totalTimesIncorrectInRow: Int, powerUpStats: [PowerUpStats], coinsWon: Int, coinsLost: Int, coinsWagered: Int) {
         self.highScore = highScore
         self.powerUpsUsedForHighscore = powerUpsUsedForHighscore
         self.totalTimesPlayed = totalTimesPlayed
         self.totalTimesIncorrectInRow = totalTimesIncorrectInRow
         self.powerUpStats = powerUpStats
+        self.coinsWon = coinsWon
+        self.coinsLost = coinsLost
+        self.coinsWagered = coinsWagered
     }
     
     

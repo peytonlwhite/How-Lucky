@@ -7,13 +7,14 @@
 
 import SwiftUI
 
-struct CustomDialog: View {
+struct CustomDialogYesOrNo: View {
     @Binding var isActive: Bool
 
     let title: String
     let message: String
-    let buttonTitle: String
-    let action: () -> ()
+    let yesButtonTitle: String
+    let noButtonTitle: String
+    let action: (_ isYes:Bool) -> ()
     @State private var offset: CGFloat = 1000
 
     var body: some View {
@@ -35,22 +36,43 @@ struct CustomDialog: View {
                 Text(message)
                     .font(.body)
                     .foregroundStyle(.black)
+                    .multilineTextAlignment(.center) // Center-align text
 
-                Button {
-                    action()
-                    close()
-                } label: {
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 20)
-                            .foregroundColor(.red)
+                HStack {
+                    Button {
+                        action(true)
+                        close()
+                    } label: {
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 20)
+                                .foregroundColor(.red)
 
-                        Text(buttonTitle)
-                            .font(.system(size: 16, weight: .bold))
-                            .foregroundColor(.white)
-                            .padding()
+                            Text(yesButtonTitle)
+                                .font(.system(size: 16, weight: .bold))
+                                .foregroundColor(.white)
+                                .padding()
+                        }
+                        .padding()
                     }
-                    .padding()
+                    
+                    Button {
+                        action(false)
+                        close()
+                    } label: {
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 20)
+                                .foregroundColor(.red)
+
+                            Text(noButtonTitle)
+                                .font(.system(size: 16, weight: .bold))
+                                .foregroundColor(.white)
+                                .padding()
+                        }
+                        .padding()
+                    }
                 }
+                
+             
             }
             .fixedSize(horizontal: false, vertical: true)
             .padding()
@@ -88,5 +110,5 @@ struct CustomDialog: View {
 }
 
 #Preview {
-    CustomDialog(isActive: .constant(true), title: "Free Coins", message: "Thanks for playing here are 5 free coins", buttonTitle: "Thanks", action: {})
+    CustomDialogYesOrNo(isActive: .constant(true), title: "Free Continue", message: "Watch an Ad to continue?", yesButtonTitle: "Yes", noButtonTitle: "No", action: {isYes in })
 }

@@ -11,14 +11,13 @@ class LuckyCircleGameBoardViewModel:ObservableObject {
     
     @Published var luckyCircles = [LuckyCircle]()
     var listOfColors = [Color]()
-    let howManyColors = 25; //25
+    let howManyColors = 10; //25 circles for each color
     let howManyCircles = 250; //250
     let dotSizeRange: ClosedRange<CGFloat> = 20...60  // Adjust dot size range as needed
     //var powerUps: [PowerUp] = []
 
     
     init() {
-        print("in viewmodel init")
         resetCircles()
         //loadPowerUps()
     }

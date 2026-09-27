@@ -7,7 +7,7 @@
 
 import Foundation
 
-class TriviaManager: ObservableObject {
+class TriviaManager: ObservableObject, @unchecked Sendable {
     
     private(set) var trivia: [TriviaResult] = []
     @Published private(set) var length = 0
@@ -19,6 +19,7 @@ class TriviaManager: ObservableObject {
     @Published private(set) var answerChoices:[TriviaAnswer] = []
     @Published private(set) var progress: CGFloat = 0.00
     @Published private(set) var score: Int = 0
+    @Published private(set) var triviaType: String = ""
     
     init() {
         Task.init {
@@ -27,7 +28,7 @@ class TriviaManager: ObservableObject {
     }
     
     func fetchTrivia(gameType:String) async {
-        setUrl(gameType: gameType)
+        await setUrl(gameType: gameType)
         
         guard let url = URL(string: url) else { fatalError("Missing URL") }
         
@@ -42,8 +43,8 @@ class TriviaManager: ObservableObject {
             decoder.keyDecodingStrategy = .convertFromSnakeCase
             let decodedData = try decoder.decode(Trivia.self,from:data)
             
-            DispatchQueue.main.async {
-                print("triv manager")
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
                 self.trivia = decodedData.results
                 self.length = self.trivia.count
                 self.setQuestion()
@@ -55,23 +56,34 @@ class TriviaManager: ObservableObject {
     }
     
     
-    func setUrl(gameType:String) {
-        print("setUrl: \(gameType)")
+    @MainActor
+    func setUrl(gameType: String) {
         switch gameType {
-        case "easy": // Trivia easy
+        case "easy":
+            triviaType = "Easy"
             url = "https://opentdb.com/api.php?amount=1&difficulty=easy"
-        case "med": // Trivia med
+        case "med":
+            triviaType = "Medium"
             url = "https://opentdb.com/api.php?amount=1&difficulty=medium"
-        case "tof": // Trivia ToF
+        case "tof":
+            triviaType = "T/F"
             url = "https://opentdb.com/api.php?amount=1&type=boolean"
-        case "mania": // Trivia mania
+        case "mania":
+            triviaType = "Mania"
             url = "https://opentdb.com/api.php?amount=50"
-        case "hard": // Trivia hard
+        case "hard":
+            triviaType = "Hard"
             url = "https://opentdb.com/api.php?amount=1&difficulty=hard"
         default:
+            triviaType = "Easy"
             url = "https://opentdb.com/api.php?amount=1&difficulty=easy"
-
         }
+    }
+
+
+    
+    func setTriviaType(type:String) {
+        triviaType = type
     }
     
     func goToNextQuestion() {
@@ -109,6 +121,7 @@ class TriviaManager: ObservableObject {
         length = 0
         index = 0
         reachedEnd = false
+        triviaType = ""
     }
     
 

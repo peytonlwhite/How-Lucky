@@ -11,6 +11,7 @@ struct AnswerRow: View {
     @EnvironmentObject var triviaManager: TriviaManager
     var answer: TriviaAnswer
     @State private var isSelected = false
+    let showCorrect: Bool
     var function: (_ isCorrect: Bool) -> Void
 
 
@@ -22,7 +23,7 @@ struct AnswerRow: View {
         HStack(spacing: 20) {
             Image(systemName: "circle.fill")
                 .font(.caption)
-                .foregroundColor(isSelected ? answer.isCorrect ? green : red : .gray)
+                .foregroundColor(isSelected || showCorrect ? answer.isCorrect ? green : red : .gray)
             
             Text(answer.text)
                 .bold()
@@ -30,7 +31,6 @@ struct AnswerRow: View {
             
             if isSelected {
                 Spacer()
-                
                 Image(systemName: answer.isCorrect ? "checkmark.circle.fill" : "x.circle.fill")
                     .foregroundColor(answer.isCorrect ? green : red)
             }
@@ -53,7 +53,7 @@ struct AnswerRow: View {
 
 struct AnswerRow_Previews: PreviewProvider {
     static var previews: some View {
-        AnswerRow(answer: TriviaAnswer(text: "Single", isCorrect:  false),
+        AnswerRow(answer: TriviaAnswer(text: "Single", isCorrect:  false), showCorrect:false,
         function: { isCorrect in
             
         })
