@@ -321,16 +321,14 @@ private extension LuckySquaresGameBoard {
             stat.totalTriviaCorrects += triviaManager.score
             if !isCorrect { stat.totalTriviaInCorrects += 1 }
             for _ in 0..<triviaManager.score {
-                guard isPowerUpActive(id: "1") || viewModel.luckySquares.contains(where: { $0 === square && !$0.isDisabled }) else { return }
-        timesGuessed += 1
+                timesGuessed += 1
                 squareClickedIsCorrect()
             }
             removeFromActivePowerUps(id: "9")
         } else {
             // Record the result before a loss resets the active power-ups.
             removeTriviaBasedOnTypeFromActivePowerUps(isCorrect: isCorrect)
-            guard isPowerUpActive(id: "1") || viewModel.luckySquares.contains(where: { $0 === square && !$0.isDisabled }) else { return }
-        timesGuessed += 1
+            timesGuessed += 1
             if isCorrect {
                 squareClickedIsCorrect()
             } else {
