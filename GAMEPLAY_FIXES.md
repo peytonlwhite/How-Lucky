@@ -110,3 +110,12 @@ Visual checklist on Mac: small iPhone and iPad; portrait/landscape and split vie
 - Export reported missing vendor dSYM files for GoogleMobileAds and UserMessagingPlatform. Upload succeeded; crashes inside those vendor frameworks may have incomplete symbol names.
 - The encryption-exemption metadata matches the existing live build. The workflow uploads for internal testing only.
 - [Future upload instructions](docs/TESTFLIGHT.md). The device, upgrade, ad-flow, and visual checklists above remain necessary before an App Store release.
+
+## Simpler game layout
+
+- Replaced the dashboard card with a small two-line score/guesses header.
+- Removed repeated game headings, board outlines, and boxed status messages.
+- Larger starting squares are centered; growing boards still scroll.
+- Reduced Circles padding so the play area fills more of the screen.
+- Added an iPhone UI check for board height and reachable power-up controls, with screenshot artifacts for visual inspection.
+- Gameplay, odds, coin accounting, and power-ups are unchanged by this layout pass.
