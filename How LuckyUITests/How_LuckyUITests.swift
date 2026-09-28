@@ -32,7 +32,7 @@ final class How_LuckyUITests: XCTestCase {
             let reward = app.buttons["Thanks, bye"]
             if reward.exists { reward.tap() }
             link.tap()
-            let board = app.otherElements["game.board"]
+            let board = app.descendants(matching: .any).matching(identifier: "game.board").firstMatch
             XCTAssertTrue(board.waitForExistence(timeout: 10))
             XCTAssertGreaterThan(board.frame.height, app.frame.height * 0.5,
                                  "The game should occupy most of the phone screen.")
