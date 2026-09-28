@@ -111,29 +111,21 @@ struct LuckyCirclesGameBoard: View {
     var body: some View {
         ZStack {
             GamePalette.canvas.ignoresSafeArea()
-            GeometryReader { layout in
-            VStack(spacing: 12) {
+            VStack(spacing: 10) {
                 GameDashboard(score: score, best: user.luckyCirclesStats?.highScore ?? 0,
                               guesses: howManyGuessesLeft, pieces: viewModel.luckyCircles.count,
-                              pieceName: "circles", coins: user.coins ?? 0, accent: GamePalette.circles, compact: layout.size.height < 480)
-                HStack {
-                    Text("Find the lucky circle").font(.headline)
-                    Spacer()
-                    if activeBet != nil {
-                        Label("Bet active", systemImage: "checkmark.seal.fill")
-                            .font(.caption.weight(.semibold)).foregroundStyle(GamePalette.circles)
-                    }
-                }.padding(.horizontal, 4)
+                              pieceName: "circles", coins: user.coins ?? 0, accent: GamePalette.circles)
                 gameBoard
+                    .accessibilityElement(children: .contain)
+                    .accessibilityIdentifier("game.board")
                     .disabled(isLoading || lockBoard || showingBetPopUp)
                 statusShelf
             }
             .padding(.horizontal, 16)
-            .padding(.top, 12)
+            .padding(.top, 4)
             .padding(.bottom, 8)
             .frame(maxWidth: 900)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-            }
 
             if isLoading {
                 Color.black.opacity(0.18).ignoresSafeArea()
@@ -210,7 +202,7 @@ struct LuckyCirclesGameBoard: View {
                             triviaCancelled: triviaCancelled
                         )
                 .disabled(isLoading || lockBoard || showingBetPopUp)
-                .padding(.horizontal, 16).padding(.vertical, 12)
+                .padding(.horizontal, 16).padding(.vertical, 8)
                 .frame(maxWidth: 900)
                 .frame(maxWidth: .infinity)
                 .background(.regularMaterial)
@@ -252,7 +244,7 @@ struct LuckyCirclesGameBoard: View {
                         showBetText = false
                     }
             } else {
-                GameNotice(text: lockBoard ? "The winning circle is revealed. Next round coming up…" : "Use power-ups to narrow the field.",
+                GameNotice(text: lockBoard ? "The winning circle is revealed. Next round coming up…" : "Tap a circle.",
                            symbol: lockBoard ? "eye" : "hand.tap", tint: .secondary)
             }
         }
@@ -271,9 +263,9 @@ struct LuckyCirclesGameBoard: View {
             }
             .onChange(of: geometry.size, initial: true) { _, size in updateBoardBounds(size) }
         }
-        .padding(12)
+        .padding(6)
         .background(GamePalette.surface, in: RoundedRectangle(cornerRadius: 24))
-        .overlay { RoundedRectangle(cornerRadius: 24).strokeBorder(GamePalette.circles.opacity(0.18), lineWidth: 1) }
+
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }

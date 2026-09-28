@@ -13,8 +13,10 @@ struct LuckySquareView: View {
             RoundedRectangle(cornerRadius: 18)
                 .strokeBorder(tint.opacity(square.isDisabled && !square.isFlashing ? 0.12 : 0.45), lineWidth: square.isFlashing ? 3 : 1.5)
             VStack(spacing: 5) {
-                Image(systemName: square.isFlashing ? "checkmark.circle.fill" : square.isDisabled ? "xmark" : "sparkle")
-                    .font(.caption.weight(.semibold))
+                if square.isFlashing || square.isDisabled {
+                    Image(systemName: square.isFlashing ? "checkmark" : "xmark")
+                        .font(.caption.weight(.semibold))
+                }
                 Text(square.name).font(.system(.title2, design: .rounded, weight: .bold)).minimumScaleFactor(0.7)
             }
             .foregroundStyle(square.isDisabled && !square.isFlashing ? Color.secondary : tint)

@@ -88,29 +88,21 @@ struct LuckySquaresGameBoard: View {
     var body: some View {
         ZStack {
             GamePalette.canvas.ignoresSafeArea()
-            GeometryReader { layout in
-            VStack(spacing: 12) {
+            VStack(spacing: 10) {
                 GameDashboard(score: score, best: user.luckySquaresStats?.highScore ?? 0,
                               guesses: howManyGuessesLeft, pieces: viewModel.luckySquares.count,
-                              pieceName: "squares", coins: user.coins ?? 0, accent: GamePalette.squares, compact: layout.size.height < 480)
-                HStack {
-                    Text("Pick your lucky square").font(.headline)
-                    Spacer()
-                    if activeBet != nil {
-                        Label("Bet active", systemImage: "checkmark.seal.fill")
-                            .font(.caption.weight(.semibold)).foregroundStyle(GamePalette.squares)
-                    }
-                }.padding(.horizontal, 4)
+                              pieceName: "squares", coins: user.coins ?? 0, accent: GamePalette.squares)
                 gameBoard
+                    .accessibilityElement(children: .contain)
+                    .accessibilityIdentifier("game.board")
                     .disabled(isLoading || lockBoard || showingBetPopUp || showingPopupContinueChance)
                 statusShelf
             }
             .padding(.horizontal, 16)
-            .padding(.top, 12)
+            .padding(.top, 4)
             .padding(.bottom, 8)
             .frame(maxWidth: 900)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-            }
 
             if isLoading {
                 Color.black.opacity(0.18).ignoresSafeArea()
@@ -201,7 +193,7 @@ struct LuckySquaresGameBoard: View {
                         triviaCancelled: triviaCancelled
                     )
                 .disabled(isLoading || lockBoard || showingBetPopUp || showingPopupContinueChance)
-                .padding(.horizontal, 16).padding(.vertical, 12)
+                .padding(.horizontal, 16).padding(.vertical, 8)
                 .frame(maxWidth: 900)
                 .frame(maxWidth: .infinity)
                 .background(.regularMaterial)
@@ -234,7 +226,7 @@ struct LuckySquaresGameBoard: View {
                         showBetText = false
                     }
             } else {
-                GameNotice(text: lockBoard ? "The winning square is revealed. Next round coming up…" : "One winner. Each correct pick adds a square.",
+                GameNotice(text: lockBoard ? "The winning square is revealed. Next round coming up…" : "Tap a square.",
                            symbol: lockBoard ? "eye" : "hand.tap", tint: .secondary)
             }
         }
@@ -253,13 +245,14 @@ struct LuckySquaresGameBoard: View {
                             .transition(.opacity)
                     }
                 }
-                .frame(maxWidth: CGFloat(columns) * 112)
+                .frame(maxWidth: CGFloat(columns) * 144)
                 .frame(maxWidth: .infinity)
-                .padding(16)
+                .padding(12)
+                .frame(minHeight: geometry.size.height, alignment: .center)
                 .animation(reduceMotion ? nil : .easeInOut(duration: 0.2), value: viewModel.luckySquares.count)
             }
             .background(GamePalette.surface, in: RoundedRectangle(cornerRadius: 24))
-            .overlay { RoundedRectangle(cornerRadius: 24).strokeBorder(GamePalette.squares.opacity(0.15), lineWidth: 1) }
+
         }
     }
 }

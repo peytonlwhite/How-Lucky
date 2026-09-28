@@ -80,12 +80,14 @@ struct GameOptionsView: View {
                 } label: {
                     GameLabelView(label: "Lucky Squares",description: MockData.luckySquaresDescription, color: Color(hex: "#FFD93D"))
                 }
+                .accessibilityIdentifier("game.squares")
                 
                 NavigationLink {
                     LuckyCirclesGameBoard(user:users[0], powerUps: getPowerUps(game:"2"))
                 } label: {
                     GameLabelView(label: "Lucky Circles", description: MockData.luckyCirclesDescription, color: Color(hex: "#4ECDC4"))
                 }
+                .accessibilityIdentifier("game.circles")
                 /*
                  NavigationLink {
                  LuckyShapesGameBoard(user:users[0], powerUps: getPowerUps(game:"3"))

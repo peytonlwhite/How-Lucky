@@ -23,6 +23,29 @@ final class How_LuckyUITests: XCTestCase {
     }
 
     @MainActor
+    func testGameLayouts() throws {
+        let app = XCUIApplication()
+        for game in ["squares", "circles"] {
+            app.launch()
+            let link = app.buttons["game." + game]
+            XCTAssertTrue(link.waitForExistence(timeout: 15))
+            let reward = app.buttons["Thanks, bye"]
+            if reward.exists { reward.tap() }
+            link.tap()
+            let board = app.otherElements["game.board"]
+            XCTAssertTrue(board.waitForExistence(timeout: 10))
+            XCTAssertGreaterThan(board.frame.height, app.frame.height * 0.5,
+                                 "The game should occupy most of the phone screen.")
+            XCTAssertTrue(app.buttons["Power-ups"].isHittable)
+            let screenshot = XCTAttachment(screenshot: app.screenshot())
+            screenshot.name = game + "-simple-layout"
+            screenshot.lifetime = .keepAlways
+            add(screenshot)
+            app.terminate()
+        }
+    }
+
+    @MainActor
     func testExample() throws {
         // UI tests must launch the application that they test.
         let app = XCUIApplication()
