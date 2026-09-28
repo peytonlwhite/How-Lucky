@@ -8,4 +8,4 @@ build/
 *.p12
 *.mobileprovision
 .env
-
+.local-signing/
