@@ -39,7 +39,7 @@ struct GameDashboard: View {
                     .foregroundStyle(accent)
             }
             HStack {
-                Text("Best \(best) · \(pieces) \(pieceName)")
+                Text("Best \(best) Â· \(pieces) \(pieceName)")
                 Spacer(minLength: 8)
                 Label(coins.formatted(), systemImage: "c.circle")
                     .accessibilityLabel("\(coins) coins")
