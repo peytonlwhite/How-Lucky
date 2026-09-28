@@ -11,6 +11,8 @@ import GoogleMobileAds
 class RewardedViewModel: NSObject, ObservableObject, GADFullScreenContentDelegate {
     @Published var coins = 0
     private var rewardedAd: GADRewardedAd?
+    private var rewardCompletion: ((Int) -> Void)?
+    private var earnedReward = 0
     
     @Published var isBannerAdLoaded = false // To track banner ad status
     private var bannerView: GADBannerView!
@@ -22,20 +24,27 @@ class RewardedViewModel: NSObject, ObservableObject, GADFullScreenContentDelegat
       }
     
     func showAd(completion: @escaping (Int) -> Void) {
+        guard rewardCompletion == nil else { return }
         guard let rewardedAd = rewardedAd else {
-            print("Ad wasn't ready.")
-            completion(0) // Return 0 if the ad isn't ready
+            completion(0)
             return
         }
-        
-        rewardedAd.present(fromRootViewController: nil) {
-            let reward = rewardedAd.adReward
-            print("Reward amount: \(reward.amount)")
-            let amount = Int(truncating: reward.amount)
-            completion(amount) // Return the reward amount through the completion handler
+        rewardCompletion = completion
+        earnedReward = 0
+        rewardedAd.present(fromRootViewController: nil) { [weak self] in
+            self?.earnedReward = max(0, Int(truncating: rewardedAd.adReward.amount))
         }
     }
-    
+
+    private func finishReward() {
+        let completion = rewardCompletion
+        let reward = earnedReward
+        rewardCompletion = nil
+        rewardedAd = nil
+        earnedReward = 0
+        completion?(reward)
+    }
+
     func addCoins(amount:Int) {
         
     }
@@ -65,6 +74,7 @@ class RewardedViewModel: NSObject, ObservableObject, GADFullScreenContentDelegat
     //mine: ca-app-pub-4618134083822244/8251527162
     //test: ca-app-pub-3940256099942544/1712485313
     func loadAd() async {
+        rewardedAd = nil
         do {
             rewardedAd = try await GADRewardedAd.load(
                 withAdUnitID: "ca-app-pub-4618134083822244/8251527162", request: GADRequest())
@@ -93,6 +103,7 @@ class RewardedViewModel: NSObject, ObservableObject, GADFullScreenContentDelegat
       didFailToPresentFullScreenContentWithError error: Error
     ) {
       print("\(#function) called")
+      finishReward()
     }
 
     func adWillPresentFullScreenContent(_ ad: GADFullScreenPresentingAd) {
@@ -105,8 +116,7 @@ class RewardedViewModel: NSObject, ObservableObject, GADFullScreenContentDelegat
 
     func adDidDismissFullScreenContent(_ ad: GADFullScreenPresentingAd) {
       print("\(#function) called")
-      // Clear the rewarded ad.
-      rewardedAd = nil
+      finishReward()
     }
     
     

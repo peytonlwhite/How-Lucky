@@ -27,7 +27,7 @@ struct AnswerRow: View {
             
             Text(answer.text)
                 .bold()
-                .foregroundStyle(.black)
+                .foregroundStyle(.primary)
             
             if isSelected {
                 Spacer()
@@ -38,13 +38,13 @@ struct AnswerRow: View {
         .padding()
         .frame(maxWidth: .infinity, alignment: .leading)
         .foregroundColor(triviaManager.answerSelected ? (isSelected ? Color(.red) : .gray) : Color(.blue))
-        .background(.white)
-        .cornerRadius(10)
+        .background(GamePalette.surface)
+        .cornerRadius(16)
         .shadow(color: isSelected ? answer.isCorrect ? green : red : .gray, radius: 5, x: 0.5, y: 0.5)
         .onTapGesture {
             if !triviaManager.answerSelected {
+                guard triviaManager.selectAnswer(answer: answer) else { return }
                 isSelected = true
-                triviaManager.selectAnswer(answer: answer)
                 function(answer.isCorrect)
             }
         }

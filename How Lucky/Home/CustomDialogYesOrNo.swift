@@ -15,97 +15,41 @@ struct CustomDialogYesOrNo: View {
     let yesButtonTitle: String
     let noButtonTitle: String
     let action: (_ isYes:Bool) -> ()
-    @State private var offset: CGFloat = 1000
+    @State private var hasResolved = false
 
     var body: some View {
-        ZStack {
-            Color(.black)
-                .opacity(0.3)
-                .cornerRadius(8)
-                .onTapGesture {
-                    close()
-                }
-
-            VStack {
-                Text(title)
-                    .font(.title2)
-                    .bold()
-                    .padding()
-                    .foregroundStyle(.black)
-
-                Text(message)
-                    .font(.body)
-                    .foregroundStyle(.black)
-                    .multilineTextAlignment(.center) // Center-align text
-
-                HStack {
-                    Button {
-                        action(true)
-                        close()
-                    } label: {
-                        ZStack {
-                            RoundedRectangle(cornerRadius: 20)
-                                .foregroundColor(.red)
-
-                            Text(yesButtonTitle)
-                                .font(.system(size: 16, weight: .bold))
-                                .foregroundColor(.white)
-                                .padding()
+        GeometryReader { geometry in
+            ZStack {
+                Color.black.opacity(0.3).ignoresSafeArea().onTapGesture { resolve(false) }
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 20) {
+                        HStack {
+                            Text(title).font(.title2.bold())
+                            Spacer()
+                            Button { resolve(false) } label: { Image(systemName: "xmark.circle.fill").font(.title2).foregroundStyle(.secondary) }
+                                .accessibilityLabel("Close")
                         }
-                        .padding()
-                    }
-                    
-                    Button {
-                        action(false)
-                        close()
-                    } label: {
-                        ZStack {
-                            RoundedRectangle(cornerRadius: 20)
-                                .foregroundColor(.red)
-
-                            Text(noButtonTitle)
-                                .font(.system(size: 16, weight: .bold))
-                                .foregroundColor(.white)
-                                .padding()
-                        }
-                        .padding()
-                    }
+                        Text(message).font(.body).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                        HStack(spacing: 12) {
+                            Button(noButtonTitle) { resolve(false) }.buttonStyle(.bordered)
+                                .frame(maxWidth: .infinity, minHeight: 44)
+                            Button(yesButtonTitle) { resolve(true) }.buttonStyle(.borderedProminent)
+                                .frame(maxWidth: .infinity, minHeight: 44)
+                        }.disabled(hasResolved)
+                    }.padding(24)
                 }
-                
-             
-            }
-            .fixedSize(horizontal: false, vertical: true)
-            .padding()
-            .background(.white)
-            .clipShape(RoundedRectangle(cornerRadius: 20))
-            .overlay(alignment: .topTrailing) {
-                Button {
-                    close()
-                } label: {
-                    Image(systemName: "xmark")
-                        .font(.title2)
-                        .fontWeight(.medium)
-                }
-                .tint(.black)
-                .padding()
-            }
-            .shadow(radius: 20)
-            .padding(30)
-            .offset(x: 0, y: offset)
-            .onAppear {
-                withAnimation(.spring()) {
-                    offset = 0
-                }
+                .frame(maxWidth: 440, maxHeight: min(360, max(0, geometry.size.height - 32)))
+                .background(GamePalette.surface, in: RoundedRectangle(cornerRadius: 26))
+                .padding(.horizontal, 20)
             }
         }
-        .ignoresSafeArea()
     }
 
-    func close() {
-        withAnimation(.spring()) {
-            offset = 1000
-            isActive = false
-        }
+    func resolve(_ choice: Bool) {
+        guard !hasResolved else { return }
+        hasResolved = true
+        isActive = false
+        action(choice)
     }
 }
 

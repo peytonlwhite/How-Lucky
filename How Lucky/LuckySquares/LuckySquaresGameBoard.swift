@@ -22,13 +22,14 @@ struct LuckySquaresGameBoard: View {
     @State private var score: Int = 0
     @State private var timesGuessed: Int = 0
     @State private var columnCount: Int = 2
+    @State private var lockBoard = false
     @State private var showingPowerUpSheet = false
     @State private var showingTriviaSheet = false
     @State private var showingBetPopUp = false
     @State private var textSwitch = false
     @State private var activePowerUps: [PowerUp] = []
     
-    let powerUps: [PowerUp]
+    @State var powerUps: [PowerUp]
     @State private var freePassPowerUp = MockData.freePassPowerUp
     @State private var nextCorrectSquare = LuckySquare(id: "99", name: "Empty", color: .red, isDisabled: false)
     @State private var howManyGuessesLeft: Int = 1
@@ -51,6 +52,7 @@ struct LuckySquaresGameBoard: View {
     //MARK: - ad properties
     @StateObject var rewardViewModel = RewardedViewModel()
 
+    @State private var hasStarted = false
     @State private var isLoading = true
  
     //disapearing reg text props
@@ -69,152 +71,53 @@ struct LuckySquaresGameBoard: View {
 
     
     //MARK: - bet properties
-    @State private var currentActiveBet:Int = 0
+    @State private var activeBet: CoinBet?
+    private var currentActiveBet: Int { activeBet?.stake ?? 0 }
     @State private var showBetCoinViewpopUp = false
     
+    @State private var coinPopupID = UUID()
     @State private var coinChangeNum = 0
     @State private var coinTotal = 0
     @State private var coinChangeColor:Color = .green
 
     
-    // MARK: - Main View
-    var body: some View {
-        NavigationStack {
-            ZStack {
-            
-                if isLoading {
-                    // Loading Screen
-                    VStack {
-                        ProgressView()
-                            .progressViewStyle(CircularProgressViewStyle(tint: .blue))
-                            .scaleEffect(2)
-                        Text("Loading...")
-                            .font(.headline)
-                            .foregroundColor(.gray)
-                            .padding(.top, 10)
-                    }
-                } else {
-                    FlashingView(
-                        shouldTransition: $shouldTransition,
-                        maxScaleEffect: maxScaleEffect,
-                        minScaleEffect: minScaleEffect,
-                        colors: colors,
-                        colorIndex: $colorIndex,
-                        animationDuration: animationDuration
-                    )
-                    
-                    ScoreView(score: score, textSwitch: textSwitch)
+    @Environment(\.dynamicTypeSize) private var typeSize
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var noticeID = UUID()
 
-                    // Centered Squares Grid
-                    Group {
-                        if viewModel.luckySquares.count > 20 {
-                            ScrollView {
-                                squaresGrid
-                            }
-                        } else {
-                            squaresGrid
-                        }
+    var body: some View {
+        ZStack {
+            GamePalette.canvas.ignoresSafeArea()
+            GeometryReader { layout in
+            VStack(spacing: 12) {
+                GameDashboard(score: score, best: user.luckySquaresStats?.highScore ?? 0,
+                              guesses: howManyGuessesLeft, pieces: viewModel.luckySquares.count,
+                              pieceName: "squares", coins: user.coins ?? 0, accent: GamePalette.squares, compact: layout.size.height < 480)
+                HStack {
+                    Text("Pick your lucky square").font(.headline)
+                    Spacer()
+                    if activeBet != nil {
+                        Label("Bet active", systemImage: "checkmark.seal.fill")
+                            .font(.caption.weight(.semibold)).foregroundStyle(GamePalette.squares)
                     }
-                    
-                    // High Score Display
-                    VStack {
-                        Spacer()
-                        Text("High Score: \(user.luckySquaresStats!.highScore)")
-                            .font(.headline)
-                            .fontWeight(.bold)
-                            .foregroundColor(.white)
-                            .padding()
-                            .background(Color.black.opacity(0.7))
-                            .cornerRadius(12)
-                            .padding(.bottom, 20)
-                    }
-                    
-                    // Disappearing Text for bets
-                    if showBetText {
-                        GeometryReader { geometry in
-                            Text(disapearingBetText)
-                                .font(.title3)
-                                .fontWeight(.bold)
-                                .foregroundColor(colorOfBetText)
-                                .multilineTextAlignment(.center) // Center text if it wraps
-                                .opacity(betTextOpacity)
-                                .frame(maxWidth: .infinity)
-                                .position(
-                                    x: geometry.size.width / 2, // Center horizontally
-                                    y: geometry.size.height * 0.05 // Position 10% from the top
-                                )
-                                .onAppear {
-                                    withAnimation(.easeOut(duration: 4)) {
-                                        betTextOpacity = 0.0
-                                    }
-                                    DispatchQueue.main.asyncAfter(deadline: .now() + 2.8) {
-                                        showBetText = false
-                                    }
-                                }
-                        }
-                    }
-                    
-                    
-                    if showBetCoinViewpopUp {
-                        GeometryReader { geometry in
-                            CoinsView(userCoins: coinTotal, coinChange: coinChangeNum, coinChangeColor: coinChangeColor, icon: "c.circle",
-                                changePopUpText: "Coins")
-                                .position(
-                                    x: geometry.size.width / 2, // Center horizontally
-                                    y: geometry.size.height * 0.2 // 20% from the top
-                                )
-                                .onAppear {
-                                    DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
-                                        showBetCoinViewpopUp = false
-                                    }
-                                }
-                        }
-                    }
-                    
-                    // Disappearing Text
-                    if showText {
-                        GeometryReader { geometry in
-                            Text(disapearingText)
-                                .font(.largeTitle)
-                                .fontWeight(.bold)
-                                .foregroundColor(.yellow)
-                                .multilineTextAlignment(.center) // Center text if it wraps
-                                .opacity(textOpacity)
-                                .frame(maxWidth: .infinity)
-                                .position(
-                                    x: geometry.size.width / 2, // Center horizontally
-                                    y: geometry.size.height * 0.2 // 20% from the top
-                                )
-                                .onAppear {
-                                    withAnimation(.easeOut(duration: 4)) {
-                                        textOpacity = 0.0
-                                    }
-                                    DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
-                                        showText = false
-                                    }
-                                }
-                        }
-                    }
-                    
-                    VStack {
-                        
-                    }
-                    .popover(isPresented: $viewGameDirections, arrowEdge: .top) {
-                        ZStack {
-                            // Display the rules as Text
-                            ScrollView {
-                                Text(MockData.luckySquaresDescription)
-                                    .font(.body)
-                                    .foregroundStyle(colorScheme == .dark ? .white :  .black)
-                                    .padding()
-                            }
-                            
-                        }
-                        .padding()
-                    }
-                    
-                    
-                    // Popup for bet
+                }.padding(.horizontal, 4)
+                gameBoard
+                    .disabled(isLoading || lockBoard || showingBetPopUp || showingPopupContinueChance)
+                statusShelf
+            }
+            .padding(.horizontal, 16)
+            .padding(.top, 12)
+            .padding(.bottom, 8)
+            .frame(maxWidth: 900)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            }
+
+            if isLoading {
+                Color.black.opacity(0.18).ignoresSafeArea()
+                ProgressView("Getting ready…")
+                    .padding(28).background(.regularMaterial, in: RoundedRectangle(cornerRadius: 20))
+            }
+                                // Popup for bet
                     if showingBetPopUp {
                         if currentActiveBet > 0 {
                             CustomDialogYesOrNo(
@@ -233,10 +136,10 @@ struct LuckySquaresGameBoard: View {
                             }
                         } else {
                             BetPopUpView(
-                                useOffset: true, 
+                                useOffset: false,
                                 userCoins: user.coins!,
                                 bettingOnText: MockData.luckySquaresBetDescription,
-                                bettingRulesText: "1. Enter the amount of coins you want to bet.\n2. Check the odds to calculate your potential winnings.\n3. If you don't have enough coins, you'll see an error.\n4. Click 'Bet' to confirm or 'Cancel' to exit.",
+                                bettingRulesText: "1. Enter the amount of coins you want to bet.\n2. Check the odds to calculate your potential winnings.\n3. If you don't have enough coins, you'll see an error.\n4. Your stake is deducted when you place the bet. A win returns your stake plus whole-coin winnings. Canceling returns one third of the stake. Leaving an unfinished game forfeits the stake.",
                                 cancelButtonText: "Cancel",
                                 titleText:"Win Some Coins!",
                                 isActive: $showingBetPopUp, odds: CGFloat(getOddsForBet())
@@ -245,13 +148,13 @@ struct LuckySquaresGameBoard: View {
                                     userBetCoinsAction(coins:Int(coins!))
                                     showBetText(text: "Bet Placed", colorOfText: .yellow)
                                 } else {
-                                
+
                                 }
                             }
                         }
                     }
-                    
-                    // Popup for Continue Chance
+
+
                     if showingPopupContinueChance {
                         CustomDialogYesOrNo(
                             isActive: $showingPopupContinueChance,
@@ -267,36 +170,22 @@ struct LuckySquaresGameBoard: View {
                             }
                         }
                     }
-                }
+        }
+        .navigationTitle("Lucky Squares")
+        .navigationBarTitleDisplayMode(.inline)
+        .tint(GamePalette.squares)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button { viewGameDirections = true } label: { Image(systemName: "questionmark.circle") }
+                    .accessibilityLabel("How to play Lucky Squares")
+                    .disabled(isLoading || showingBetPopUp || showingPopupContinueChance)
             }
-            .navigationTitle("Lucky Squares")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                
-                // Left-aligned items
-                ToolbarItem(placement: .navigationBarLeading) {
-                    HStack {
-                        Text("\(howManyGuessesLeft) -")
-                            .font(.title3)
-                            .foregroundStyle(.blue)
-                        
-                        Text("\(viewModel.luckySquares.count)")
-                            .font(.title3)
-                            .foregroundStyle(.blue)
-                        
-                        Button {
-                            viewGameDirections = true
-                        } label: {
-                            Image(systemName: "questionmark.circle")
-                                .font(.callout)
-                                .foregroundColor(.blue)
-                        }
-                    }
-                }
-                
-                // Right-aligned toolbar view
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    ToolbarView(
+        }
+        .sheet(isPresented: $viewGameDirections) {
+            GameRulesSheet(title: "How to play", rules: MockData.luckySquaresDescription)
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            ToolbarView(
                         showingPowerUpSheet: $showingPowerUpSheet,
                         showingTriviaSheet: $showingTriviaSheet,
                         showingBetPopUp: $showingBetPopUp,
@@ -307,49 +196,73 @@ struct LuckySquaresGameBoard: View {
                         triviaManager: triviaManager,
                         showBets: isBettingActive(),
                         user: user,
-                        mainGameType: MainGameType.squares
+                        mainGameType: MainGameType.squares,
+                        hasActiveBet: activeBet != nil,
+                        triviaCancelled: triviaCancelled
                     )
-                }
-                
-           
-            }
-            .onAppear {
-                startFlashingAnimation()
-                isLoading = false
-                resetPowerUps()
-                resetActivePowerUps()
+                .disabled(isLoading || lockBoard || showingBetPopUp || showingPopupContinueChance)
+                .padding(.horizontal, 16).padding(.vertical, 12)
+                .frame(maxWidth: 900)
+                .frame(maxWidth: .infinity)
+                .background(.regularMaterial)
+        }
+        .onAppear {
+            guard !hasStarted else { return }
+            hasStarted = true
+            isLoading = false
+            resetPowerUps()
+            resetActivePowerUps()
+
+        }
+    }
+
+    private var statusShelf: some View {
+        Group {
+            if showBetCoinViewpopUp {
+                GameNotice(text: "\(coinChangeNum >= 0 ? "+" : "")\(coinChangeNum) coins · Balance \(user.coins ?? 0)",
+                           symbol: "c.circle.fill", tint: coinChangeNum >= 0 ? .green : .red)
+                    .id(coinPopupID)
+                    .task {
+                        do { try await Task.sleep(for: .seconds(3)) } catch { return }
+                        showBetCoinViewpopUp = false
+                    }
+            }  else if showBetText && !disapearingBetText.isEmpty {
+                GameNotice(text: disapearingBetText, symbol: "info.circle", tint: GamePalette.squares)
+                    .id(noticeID)
+                    .task {
+                        do { try await Task.sleep(for: .seconds(3)) } catch { return }
+                        showBetText = false
+                    }
+            } else {
+                GameNotice(text: lockBoard ? "The winning square is revealed. Next round coming up…" : "One winner. Each correct pick adds a square.",
+                           symbol: lockBoard ? "eye" : "hand.tap", tint: .secondary)
             }
         }
     }
-    
-    
-    
-    
-    private var squaresGrid: some View {
-        LazyVGrid(
-            columns: Array(repeating: GridItem(.flexible(minimum: 20)), count: columnCount),
-            alignment: .center,
-            spacing: 10
-        ) {
-            ForEach(viewModel.luckySquares, id: \.self) { square in
-                Button {
-                    squareClicked(square: square)
-                } label: {
-                    LuckySquareView(square: square)
-                        .cornerRadius(10)
-                        .shadow(color: .gray, radius: 4, x: 0, y: 2)
+
+    private var gameBoard: some View {
+        GeometryReader { geometry in
+            let capacity = typeSize.isAccessibilitySize ? 2 : max(2, Int(max(0, geometry.size.width - 22) / 76))
+            let columns = min(capacity, min(6, max(2, Int(ceil(sqrt(Double(viewModel.luckySquares.count)))))))
+            ScrollView {
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: columns), spacing: 10) {
+                    ForEach(viewModel.luckySquares) { square in
+                        Button { squareClicked(square: square) } label: { LuckySquareView(square: square) }
+                            .buttonStyle(.plain)
+                            .disabled(square.isDisabled)
+                            .transition(.opacity)
+                    }
                 }
-                .disabled(square.isDisabled)
+                .frame(maxWidth: CGFloat(columns) * 112)
+                .frame(maxWidth: .infinity)
+                .padding(16)
+                .animation(reduceMotion ? nil : .easeInOut(duration: 0.2), value: viewModel.luckySquares.count)
             }
+            .background(GamePalette.surface, in: RoundedRectangle(cornerRadius: 24))
+            .overlay { RoundedRectangle(cornerRadius: 24).strokeBorder(GamePalette.squares.opacity(0.15), lineWidth: 1) }
         }
-        .padding()
     }
-    
-    
 }
-
-
-
 
 private extension LuckySquaresGameBoard {
     
@@ -358,19 +271,12 @@ private extension LuckySquaresGameBoard {
     var transitioningColor: Color { colors[(colorIndex + 1) % colors.count] }
      
     func getActiveBetCancelOrNotMessage() -> String {
-        return "\(currentActiveBet) coins at \(formatOddsToFraction(getOddsForBet())) odds"
+        guard let bet = activeBet else { return "No active bet" }
+        return "\(bet.stake) coins at \(CoinBet.oddsLabel(bet.odds)). Win: \(bet.payout) coins returned. Cancel: \(bet.cancellationRefund) coins returned."
     }
     
     func formatOddsToFraction(_ odds: CGFloat) -> String {
-        let roundedOdds = round(odds * 10) / 10
-        if roundedOdds > 1 {
-            return "\(Int(roundedOdds)) to 1"
-        } else if roundedOdds == 1 {
-            return "1 to 1"
-        } else {
-            let invertedOdds = 1 / roundedOdds
-            return "1 to \(Int(invertedOdds))"
-        }
+        return CoinBet.oddsLabel(Double(odds))
     }
     
     func isBettingActive() -> Bool {
@@ -381,13 +287,14 @@ private extension LuckySquaresGameBoard {
     }
     
     func getOddsForBet() -> CGFloat {
-        let numOfSquares = viewModel.luckySquares.count
-        let odds = CGFloat(numOfSquares)-1 / CGFloat(1)
-        return odds
+        return CGFloat(CoinBet.odds(choices: viewModel.luckySquares.filter { !$0.isDisabled }.count, guesses: howManyGuessesLeft))
     }
     
     func userBetCoinsAction(coins:Int) {
-        currentActiveBet = coins
+        guard activeBet == nil,
+              let bet = CoinBet(stake: coins, balance: user.coins ?? 0, odds: Double(getOddsForBet())) else { return }
+        user.coins = (user.coins ?? 0) - bet.stake
+        activeBet = bet
     }
     
     func isSquareCorrect(squareId:String) -> Bool {
@@ -409,28 +316,28 @@ private extension LuckySquaresGameBoard {
     }
     
     func triviaDone(isCorrect:Bool) {
-        if(isCorrect) {
-            removeTriviaBasedOnTypeFromActivePowerUps(isCorrect: true)
-            timesGuessed += 1
-            squareClickedIsCorrect()
+        if triviaManager.triviaType == "Mania" {
+            let stat = getPowerUpStat(id: "9")
+            stat.totalTriviaCorrects += triviaManager.score
+            if !isCorrect { stat.totalTriviaInCorrects += 1 }
+            for _ in 0..<triviaManager.score {
+                guard isPowerUpActive(id: "1") || viewModel.luckySquares.contains(where: { $0 === square && !$0.isDisabled }) else { return }
+        timesGuessed += 1
+                squareClickedIsCorrect()
+            }
+            removeFromActivePowerUps(id: "9")
         } else {
-            if(isPowerUpActive(id: "9")) { // trivia mania is active so count them
-                for _ in 0..<triviaManager.score {
-                    getPowerUpStat(id: getTrivaIdBasedOnType()).totalTriviaCorrects += 1
-                    timesGuessed += 1
-                    squareClickedIsCorrect()
-                }
-                getPowerUpStat(id: getTrivaIdBasedOnType()).totalTriviaInCorrects += 1
-                removeFromActivePowerUps(id:getTrivaIdBasedOnType())
+            // Record the result before a loss resets the active power-ups.
+            removeTriviaBasedOnTypeFromActivePowerUps(isCorrect: isCorrect)
+            guard isPowerUpActive(id: "1") || viewModel.luckySquares.contains(where: { $0 === square && !$0.isDisabled }) else { return }
+        timesGuessed += 1
+            if isCorrect {
+                squareClickedIsCorrect()
             } else {
-                timesGuessed += 1
                 squareClickedIsInCorrectDontShowCorrectSquare(chance: true)
-                removeTriviaBasedOnTypeFromActivePowerUps(isCorrect: false)
             }
         }
-        
         resetTriviaManager()
-
     }
     
     func getTrivaIdBasedOnType() -> String {
@@ -459,13 +366,28 @@ private extension LuckySquaresGameBoard {
         removeFromActivePowerUps(id:getTrivaIdBasedOnType())
     }
     
+    func triviaCancelled() {
+        let id = getTrivaIdBasedOnType()
+        if let powerUp = activePowerUps.first(where: { $0.id == id }) {
+            user.coins = (user.coins ?? 0) + powerUp.costOfCoins
+            powerUp.isLocked = false
+            let stat = getPowerUpStat(id: id)
+            stat.totalTimesUsed = max(0, stat.totalTimesUsed - 1)
+            powerUpsUsedForHighscore = max(0, powerUpsUsedForHighscore - 1)
+            removeFromActivePowerUps(id: id)
+        }
+        triviaManager.resetManager()
+    }
+
     func resetTriviaManager() {
         triviaManager.resetManager()
     }
     
     func powerUpChosen(powerUp: PowerUp) {
+        guard !lockBoard, !isLoading, activeBet == nil, !powerUp.isLocked, powerUp.costOfCoins <= (user.coins ?? 0) else { return }
                 
         powerUp.isLocked = true
+        removeFromActivePowerUps(id: powerUp.id)
         activePowerUps.append(powerUp)
         
         if(powerUp.costOfCoins > 0) {
@@ -500,29 +422,42 @@ private extension LuckySquaresGameBoard {
         
       }
     
-    func adForContinueChance()  {
+    func adForContinueChance() {
         isLoading = true
-        Task {
+        Task { @MainActor in
             await rewardViewModel.loadAd()
-            isLoading = false
             rewardViewModel.showAd { reward in
-                // do nothing let them continue
+                isLoading = false
+                if reward > 0 {
+                    howManyGuessesLeft = 1
+                    enableAllSquares()
+                } else {
+                    // A failed or skipped ad must not grant a free continuation.
+                    squareClickedIsInCorrect(chance: false)
+                }
             }
-         }
+        }
     }
-    
-    func adForCoins()  {
-        removeFromActivePowerUps(id:"12")
+
+    func adForCoins() {
+        removeFromActivePowerUps(id: "12")
         isLoading = true
-        Task {
+        Task { @MainActor in
             await rewardViewModel.loadAd()
-            isLoading = false
             rewardViewModel.showAd { reward in
-                user.coins = user.coins! + reward
+                isLoading = false
+                user.coins = (user.coins ?? 0) + reward
+                if reward == 0 {
+                    powerUps.first(where: { $0.id == "12" })?.isLocked = false
+                    let stat = getPowerUpStat(id: "12")
+                    stat.totalTimesUsed = max(0, stat.totalTimesUsed - 1)
+                    powerUpsUsedForHighscore = max(0, powerUpsUsedForHighscore - 1)
+                    showBetText(text: "No ad reward received. You can try again.", colorOfText: .yellow)
+                }
             }
-         }
+        }
     }
-    
+
     func getPowerUpStat(id:String) -> PowerUpStats {
         //if need default powerup then we can return it from mockdata powerups
         return (user.luckySquaresStats?.powerUpStats.first(where: {$0.id == id}))!
@@ -553,9 +488,19 @@ private extension LuckySquaresGameBoard {
     
     func twoGuesses() { howManyGuessesLeft = 2 }
     
-    func luckyRestart() { resetSquares(); columnCount = 2 }
+    func luckyRestart() {
+        viewModel.restartKeepingScore()
+        removeFromActivePowerUps(id: "2")
+        removeFromActivePowerUps(id: "3")
+        howManyGuessesLeft = isPowerUpActive(id: "4") ? 2 : 1
+        columnCount = 2
+    }
     
-    func split5050() { resetSquares(); columnCount = 2 }
+    func split5050() {
+        viewModel.use5050()
+        howManyGuessesLeft = isPowerUpActive(id: "4") ? 2 : 1
+        columnCount = 2
+    }
     
     func generateNextGuessedSquare() {
         let randomRange = Int.random(in: 0..<viewModel.luckySquares.count)
@@ -563,6 +508,8 @@ private extension LuckySquaresGameBoard {
     }
     
     func squareClicked(square:LuckySquare) {
+        guard !lockBoard, !isLoading, !showingBetPopUp, !showingPopupContinueChance else { return }
+        guard isPowerUpActive(id: "1") || viewModel.luckySquares.contains(where: { $0 === square && !$0.isDisabled }) else { return }
         timesGuessed += 1
            
         //Before seeing if guess is correct
@@ -576,52 +523,16 @@ private extension LuckySquaresGameBoard {
             return
         }
         
-        //50-50 is active, we don't care until one is guess correctly
-        if(isPowerUpActive(id:"2") && !isPowerUpActive(id:"4")) {
+        // Only the second attempt of Two Guesses keeps the previous target.
+        // Other active power-ups must not leave an old or removed target in play.
+        if !isPowerUpActive(id: "4") || howManyGuessesLeft == 2 {
             generateNextGuessedSquare()
         }
-        
-        //Lucky Restart is active, we don't care work is already done
-        if(isPowerUpActive(id:"3")) {
-            removeFromActivePowerUps(id:"3")
-            generateNextGuessedSquare()
-        }
-        
-        //Two Guesses is active only generate next guess the first try
-        if(isPowerUpActive(id:"4")) {
-            if(howManyGuessesLeft == 2) { //this is the first guess
-                generateNextGuessedSquare()
-            } else {
-                //already guessed twice
-            }
-        }
-        
-        
-        if(activePowerUps.isEmpty) { //continue as normal
-            generateNextGuessedSquare()
+        if isPowerUpActive(id: "3") {
+            removeFromActivePowerUps(id: "3")
         }
 
-        //last check just in case
-        if(nextCorrectSquare.id == "99") {
-            generateNextGuessedSquare()
-        }
-        
         if(nextCorrectSquare.id == square.id) {
-            //50-50 is active, refill squares and remove it
-            if(isPowerUpActive(id:"2")) {
-                resetSquares()
-                for count in 0..<timesGuessedRight {
-                    checkColumnCount()
-                    viewModel.luckySquares.append(LuckySquare(id: UUID().uuidString, name: "\(count+3)", color: .red, isDisabled: false))
-                }
-                removeFromActivePowerUps(id:"2")
-            }
-            
-            
-            //Two Guesses is active reset it and remove it
-            if(isPowerUpActive(id:"4")) {
-                removeFromActivePowerUps(id:"4")
-            }
             squareClickedIsCorrect()
         } else { // incorrect guess
             if(isPowerUpActive(id:"4")) { //two guesses is active
@@ -674,6 +585,7 @@ private extension LuckySquaresGameBoard {
     }
     
     func resetDisapearingBetTextParams() {
+        noticeID = UUID()
         showBetText = true
         betTextOpacity = 1.0
     }
@@ -689,12 +601,7 @@ private extension LuckySquaresGameBoard {
     }
     
     func removeFromActivePowerUps(id:String) {
-        if let index = activePowerUps.enumerated().first(where: {$0.element.id == id}) {
-           // do something with foo.offset and foo.element
-            activePowerUps.remove(at: index.offset)
-        } else {
-           // item could not be found
-        }
+        activePowerUps.removeAll { $0.id == id }
     }
     
     func resetActivePowerUps() {
@@ -702,37 +609,43 @@ private extension LuckySquaresGameBoard {
     }
     
     func squareClickedIsCorrect() {
-        let numOfSquares = viewModel.luckySquares.count
+        // Trivia and Free Pass can finish a round while Two Guesses is active.
+        // Do not carry its second-attempt target into the next round.
+        removeFromActivePowerUps(id: "4")
+        removeFromActivePowerUps(id: "2")
+        viewModel.advance()
         timesGuessedRight += 1
-        score = timesGuessed * 50
+        score = timesGuessedRight * 50
         howManyGuessesLeft = 1
         timesGuessedWrong = 0
         toggleScoreView()
         checkColumnCount()
         checkHighscore()
+        showBetText(text: "Round cleared · \(score) points", colorOfText: .green)
         //checkStats()
         enableAllSquares()
         
         setDisapearingText()
         triedMoreThanOnce = true
         checkActiveBetsCorrect()
-        viewModel.luckySquares.append(LuckySquare(id: UUID().uuidString, name: "\(numOfSquares+1)", color: .red, isDisabled: false))
     }
     
     func clearActiveBets() {
-        if(currentActiveBet > 0) {
-            showBetText(text: "Bet Cleared", colorOfText:.yellow)
-        }
-        currentActiveBet = 0
+        guard let bet = activeBet else { return }
+        user.coins = (user.coins ?? 0) + bet.cancellationRefund
+        user.luckySquaresStats?.coinsWagered = (user.luckySquaresStats?.coinsWagered ?? 0) + bet.stake
+        user.luckySquaresStats?.coinsLost = (user.luckySquaresStats?.coinsLost ?? 0) + bet.stake - bet.cancellationRefund
+        activeBet = nil
+        showBetText(text: "Bet canceled: \(bet.cancellationRefund) coins returned", colorOfText: .yellow)
     }
     
     func checkActiveBetsCorrect() {
         if(currentActiveBet > 0) {
-            showBetCoinViewPopUp(totalCoins: user.coins!, numOfCoins: (Int(getPayoutFromBet())), colorOfChange: .green)
+            showBetCoinViewPopUp(totalCoins: user.coins!, numOfCoins: (activeBet?.payout ?? 0), colorOfChange: .green)
             //showBetText(text: "Bet Won: +\(Int(getPayoutFromBet()))c", colorOfText:.green)
             updateBettingStatsCorrect()
-            user.coins = user.coins! + Int(getPayoutFromBet())
-            currentActiveBet = 0
+            user.coins = (user.coins ?? 0) + (activeBet?.payout ?? 0)
+            activeBet = nil
         }
     }
     
@@ -745,20 +658,21 @@ private extension LuckySquaresGameBoard {
     
     
     func resetDisapearingBetCoinViewParams() {
+        coinPopupID = UUID()
         showBetCoinViewpopUp = true
     }
     
     func getPayoutFromBet() -> CGFloat {
-        return CGFloat(currentActiveBet) * getOddsForBet()
+        return CGFloat(activeBet?.winnings ?? 0)
     }
     
     func checkActiveBetsInCorrect() {
         if(currentActiveBet > 0) {
-            showBetCoinViewPopUp(totalCoins: user.coins!,numOfCoins: 0-currentActiveBet, colorOfChange: .red)
+            showBetCoinViewPopUp(totalCoins: (user.coins ?? 0) + currentActiveBet,numOfCoins: 0-currentActiveBet, colorOfChange: .red)
             //showBetText(text: "Bet Lost: -\(currentActiveBet)c", colorOfText:.red)
             updateBettingStatsInCorrect()
-            user.coins = user.coins! - currentActiveBet
-            currentActiveBet = 0
+            // The stake was reserved when the bet was placed.
+            activeBet = nil
         }
     }
     
@@ -781,18 +695,11 @@ private extension LuckySquaresGameBoard {
     }
     
     func checkColumnCount() {
-        if(columnCount > 3) {
-            
-        } else {
-            columnCount = viewModel.luckySquares.count+1
-        }
+        columnCount = min(4, max(2, viewModel.luckySquares.count))
     }
     
     func resetSquares() {
-        viewModel.luckySquares = [
-                LuckySquare(id: UUID().uuidString, name: "1", color: .red, isDisabled: false),
-                LuckySquare(id: UUID().uuidString, name: "2", color: .red, isDisabled: false)
-            ]
+        viewModel.reset()
     }
     
     func enableAllSquares() {
@@ -828,6 +735,7 @@ private extension LuckySquaresGameBoard {
     }
     
     func gameBoardReset() {
+        lockBoard = false
         resetGameVars()
         resetSquares()
         resetPowerUps()
@@ -836,10 +744,12 @@ private extension LuckySquaresGameBoard {
     }
     
     func squareClickedIsInCorrect(chance:Bool) {
+        checkActiveBetsInCorrect()
         let randomRange = Int.random(in: 0..<20)
         if(chance && randomRange == 1) {
             showingPopupContinueChance = true
         } else {
+            lockBoard = true
             disableAllSquares()
             score = 0
             toggleScoreView()
@@ -865,6 +775,7 @@ private extension LuckySquaresGameBoard {
     }
     
     func squareClickedIsInCorrectDontShowCorrectSquare(chance:Bool) {
+        checkActiveBetsInCorrect()
         let randomRange = Int.random(in: 0..<20)
         if(chance && randomRange == 1) {
             showingPopupContinueChance = true
@@ -920,5 +831,7 @@ private extension LuckySquaresGameBoard {
 }
 
 #Preview {
+    NavigationStack {
     LuckySquaresGameBoard(user: MockData.defUser, powerUps: MockData.squarePowerUps)
+    }
 }

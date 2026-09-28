@@ -20,36 +20,55 @@ struct ToolbarView: View {
     let showBets:Bool
     @Bindable var user: User
     let mainGameType: MainGameType
+    var hasActiveBet: Bool = false
+    var triviaCancelled: () -> Void = {}
+    @State private var pendingPowerUp: PowerUp?
 
+
+    private var accent: Color { mainGameType == .squares ? GamePalette.squares : GamePalette.circles }
 
     var body: some View {
-        HStack { // Wrap everything in an HStack
-            if showBets {
-                Button("Bet") {
-                    showingBetPopUp.toggle()
+        VStack(spacing: 6) {
+            HStack(spacing: 12) {
+                Button { showingBetPopUp = true } label: {
+                    Label(hasActiveBet ? "Manage bet" : "Bet coins", systemImage: "c.circle")
+                        .font(.subheadline.weight(.semibold)).frame(maxWidth: .infinity, minHeight: 48)
                 }
-            }
+                .buttonStyle(.plain)
+                .foregroundStyle(accent)
+                .background(accent.opacity(0.1), in: RoundedRectangle(cornerRadius: 16))
+                .disabled(!showBets)
+                .opacity(showBets ? 1 : 0.45)
 
-            Button("Power Ups") {
-                showingPowerUpSheet.toggle()
+                Button { showingPowerUpSheet = true } label: {
+                    Label("Power-ups", systemImage: "bolt.fill")
+                        .font(.subheadline.weight(.semibold)).frame(maxWidth: .infinity, minHeight: 48)
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(Color(uiColor: .systemBackground))
+                .background(accent, in: RoundedRectangle(cornerRadius: 16))
+                .disabled(hasActiveBet)
+                .opacity(hasActiveBet ? 0.45 : 1)
             }
-            .sheet(isPresented: $showingPowerUpSheet) {
-                PowerUpSheetView(
-                    function: powerUpChosen,
-                    powerUps: powerUps,
-                    freePassPowerUp: freePassPowerUp,
-                    user: user
-                )
-            }
-
-            .sheet(isPresented: $showingTriviaSheet) {
-                TriviaSheetView(function: triviaDone, user: user, mainGameType: mainGameType)
-                    .environmentObject(triviaManager)
+            if hasActiveBet || !showBets {
+                Text(hasActiveBet ? "Finish or cancel your bet to use power-ups." : "Finish Two Guesses before placing a bet.")
+                    .font(.caption2).foregroundStyle(.secondary)
             }
         }
+        .sheet(isPresented: $showingPowerUpSheet, onDismiss: {
+            guard let selection = pendingPowerUp else { return }
+            pendingPowerUp = nil
+            powerUpChosen(selection)
+        }) {
+            PowerUpSheetView(function: { selection in
+                if pendingPowerUp == nil { pendingPowerUp = selection }
+            }, powerUps: powerUps, freePassPowerUp: freePassPowerUp, user: user)
+        }
+        .sheet(isPresented: $showingTriviaSheet) {
+            TriviaSheetView(function: triviaDone, user: user, mainGameType: mainGameType, onLoadCancelled: triviaCancelled)
+                .environmentObject(triviaManager)
+        }
     }
-    
-    
 }
 
 #Preview {

@@ -199,7 +199,7 @@ struct LuckyShapesGameBoard: View {
     }
     
     func isFlashing(_ index: Int) -> Bool {
-        isShowingPattern && currentFlashingIndex > 0 && patternToMatch[currentFlashingIndex - 1] == index
+        isShowingPattern && currentFlashingIndex > 0 && currentFlashingIndex <= patternToMatch.count && patternToMatch[currentFlashingIndex - 1] == index
     }
     
     func handlePlayerTap(index: Int) {
@@ -239,7 +239,7 @@ struct LuckyShapesGameBoard: View {
     }
     
     func checkUserStats() {
-        if(score > user.luckyPatternsStats!.highScore * 50) {
+        if(score > (user.luckyPatternsStats?.highScore ?? 0)) {
             user.luckyPatternsStats?.highScore = score
         }
     }
@@ -261,11 +261,11 @@ struct LuckyShapesGameBoard: View {
     }
     
     func increaseDifficulty() {
-        if score % 3 == 0 {
+        if (score / 50) % 3 == 0 {
             gridSize += 1
             gridShapes.append(contentsOf: ["🟩", "🔳", "🟫"]) // Add more shapes for larger grid
         }
-        if score % 2 == 0 {
+        if (score / 50) % 2 == 0 {
             patternLength += 1
         }
     }

@@ -18,7 +18,7 @@ struct LuckyCirclesGameBoard: View {
     @StateObject var triviaManager = TriviaManager()
     
     // MARK: - PowerUp Info
-    let powerUps: [PowerUp]
+    @State var powerUps: [PowerUp]
     @State private var freePassPowerUp: PowerUp = MockData.freePassPowerUp
     @State private var activePowerUps: [PowerUp] = []
     
@@ -40,7 +40,7 @@ struct LuckyCirclesGameBoard: View {
     @State private var score: Int = 0
     @State private var powerUpsUsedForCurrentScore: Int = 0
     @State private var nextCorrectCircle: LuckyCircle = LuckyCircle(
-        id: "99", name: "Empty", color: .red, isDisabled: false, size: 50.0,
+        id: "unselected", name: "Empty", color: .red, isDisabled: false, size: 50.0,
         position: CGPoint(x: 50, y: 100)
     )
     
@@ -71,6 +71,7 @@ struct LuckyCirclesGameBoard: View {
     //MARK: - ad properties
     @StateObject var rewardViewModel = RewardedViewModel()
     
+    @State private var hasStarted = false
     @State private var isLoading = true
     
     @State private var showText = true
@@ -80,12 +81,18 @@ struct LuckyCirclesGameBoard: View {
     
     
     //MARK: - bet properties
-    @State private var currentActiveBet:Int = 0
+    @State private var activeBet: CoinBet?
+    private var currentActiveBet: Int { activeBet?.stake ?? 0 }
     @State private var quadGeoSize:CGSize = .zero
     @State private var showBetCoinViewpopUp = false
     @State private var showCircleChangeViewpopUp = false
+    @State private var circlePopupID = UUID()
+    @State private var circleTotal = 0
+    @State private var circleChangeNum = 0
+    @State private var circleChangeColor: Color = .purple
     @State private var showingBetPopUp = false
     
+    @State private var coinPopupID = UUID()
     @State private var coinChangeNum = 0
     @State private var coinTotal = 0
     @State private var coinChangeColor:Color = .green
@@ -98,112 +105,42 @@ struct LuckyCirclesGameBoard: View {
     
     
     
-    // MARK: - Main View
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var noticeID = UUID()
+
     var body: some View {
-        NavigationStack {
+        ZStack {
+            GamePalette.canvas.ignoresSafeArea()
+            GeometryReader { layout in
+            VStack(spacing: 12) {
+                GameDashboard(score: score, best: user.luckyCirclesStats?.highScore ?? 0,
+                              guesses: howManyGuessesLeft, pieces: viewModel.luckyCircles.count,
+                              pieceName: "circles", coins: user.coins ?? 0, accent: GamePalette.circles, compact: layout.size.height < 480)
+                HStack {
+                    Text("Find the lucky circle").font(.headline)
+                    Spacer()
+                    if activeBet != nil {
+                        Label("Bet active", systemImage: "checkmark.seal.fill")
+                            .font(.caption.weight(.semibold)).foregroundStyle(GamePalette.circles)
+                    }
+                }.padding(.horizontal, 4)
+                gameBoard
+                    .disabled(isLoading || lockBoard || showingBetPopUp)
+                statusShelf
+            }
+            .padding(.horizontal, 16)
+            .padding(.top, 12)
+            .padding(.bottom, 8)
+            .frame(maxWidth: 900)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            }
+
             if isLoading {
-                // Loading Screen
-                VStack {
-                    ProgressView()
-                        .progressViewStyle(CircularProgressViewStyle(tint: .blue))
-                        .scaleEffect(2)
-                    Text("Loading...")
-                        .font(.headline)
-                        .foregroundColor(.gray)
-                        .padding(.top, 10)
-                }
-            } else {
-                GeometryReader { geometry in
-                    ZStack {
-                        FlashingView(
-                            shouldTransition: $shouldTransition,
-                            maxScaleEffect: maxScaleEffect,
-                            minScaleEffect: minScaleEffect,
-                            colors: colors,
-                            colorIndex: $colorIndex,
-                            animationDuration: animationDuration
-                        )
-                        
-                        ScoreView(score: score, textSwitch: textSwitch)
-                        
-                        ForEach(Array(viewModel.luckyCircles.enumerated()), id: \.offset) { index, circle in
-                            LuckyCircleView(circle: circle, isCorrect: circle.id == nextCorrectCircle.id) {
-                                if !lockBoard {
-                                    circleClicked(circle: circle)
-                                }
-                            }
-                        }
-                        
-                        
-                        flashQuadrantBorder(in: geometry.size)
-                            .onAppear() {
-                                if(quadGeoSize.equalTo(.zero)) {
-                                    quadGeoSize = geometry.size
-                                }
-                            }
-                          
-                    }
-                    
-                    
-                    // Disappearing Text for bets
-                    if showBetText {
-                        GeometryReader { geometry in
-                            Text(disapearingBetText)
-                                .font(.title2)
-                                .fontWeight(.bold)
-                                .foregroundColor(colorOfBetText)
-                                .multilineTextAlignment(.center) // Center text if it wraps
-                                .opacity(betTextOpacity)
-                                .frame(maxWidth: .infinity)
-                                .position(
-                                    x: geometry.size.width / 2, // Center horizontally
-                                    y: geometry.size.height * 0.05 // Position 10% from the top
-                                )
-                                .onAppear {
-                                    withAnimation(.easeOut(duration: 4)) {
-                                        betTextOpacity = 0.0
-                                    }
-                                    DispatchQueue.main.asyncAfter(deadline: .now() + 2.8) {
-                                        showBetText = false
-                                    }
-                                }
-                        }
-                    }
-                    
-                    
-                    if showBetCoinViewpopUp {
-                        GeometryReader { geometry in
-                            CoinsView(userCoins: coinTotal, coinChange: coinChangeNum, coinChangeColor: coinChangeColor,icon:"c.circle",
-                                      changePopUpText: "Coins")
-                                .position(
-                                    x: geometry.size.width / 2, // Center horizontally
-                                    y: geometry.size.height * 0.2 // 20% from the top
-                                )
-                                .onAppear {
-                                    DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
-                                        showBetCoinViewpopUp = false
-                                    }
-                                }
-                        }
-                    }
-                    
-                    if showCircleChangeViewpopUp {
-                        GeometryReader { geometry in
-                            CoinsView(userCoins: coinTotal, coinChange: coinChangeNum, coinChangeColor: coinChangeColor, icon:"circlebadge.fill",
-                                 changePopUpText: "Circles")
-                                .position(
-                                    x: geometry.size.width / 2, // Center horizontally
-                                    y: geometry.size.height * 0.2 // 20% from the top
-                                )
-                                .onAppear {
-                                    DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
-                                        showCircleChangeViewpopUp = false
-                                    }
-                                }
-                        }
-                    }
-                    
-                    // Popup for bet
+                Color.black.opacity(0.18).ignoresSafeArea()
+                ProgressView("Getting ready…")
+                    .padding(28).background(.regularMaterial, in: RoundedRectangle(cornerRadius: 20))
+            }
+                                // Popup for bet
                     if showingBetPopUp {
                         if currentActiveBet > 0 {
                             CustomDialogYesOrNo(
@@ -222,10 +159,10 @@ struct LuckyCirclesGameBoard: View {
                             }
                         } else {
                             BetPopUpView(
-                                useOffset: true,
+                                useOffset: false,
                                 userCoins: user.coins!,
                                 bettingOnText: MockData.luckyCirclesBetDescription,
-                                bettingRulesText: "1. Enter the amount of coins you want to bet.\n2. Check the odds to calculate your potential winnings.\n3. If you don't have enough coins, you'll see an error.\n4. Click 'Bet' to confirm or 'Cancel' to exit.",
+                                bettingRulesText: "1. Enter the amount of coins you want to bet.\n2. Check the odds to calculate your potential winnings.\n3. If you don't have enough coins, you'll see an error.\n4. Your stake is deducted when you place the bet. A win returns your stake plus whole-coin winnings. Canceling returns one third of the stake. Leaving an unfinished game forfeits the stake.",
                                 cancelButtonText: "Cancel",
                                 titleText:"Win Some Coins!",
                                 isActive: $showingBetPopUp, odds: CGFloat(getOddsForBet())
@@ -237,83 +174,27 @@ struct LuckyCirclesGameBoard: View {
                                     showingBetPopUp = false
                                 }
                             }
-                         
+
                         }
                     }
-                        
-                    VStack {
-                        
-                    }
-                    .popover(isPresented: $viewGameDirections, arrowEdge: .top) {
-                        ZStack {
-                            // Display the rules as Text
-                            ScrollView {
-                                Text(MockData.luckyCirclesDescription)
-                                    .font(.body)
-                                    .foregroundStyle(colorScheme == .dark ? .white :  .black)
-                                    .padding()
-                            }
-                            
-                        }
-                        .padding()
-                    }
-                    .onAppear {
-                        screenSize = geometry.size
-                    }
-                    
-                    // Disappearing Text at Mid-Top and Centered
-                    if showText {
-                        GeometryReader { geometry in
-                            Text(disapearingText)
-                                .font(.largeTitle)
-                                .fontWeight(.bold)
-                                .foregroundColor(.orange)
-                                .multilineTextAlignment(.center) // Center text if it wraps
-                                .opacity(textOpacity)
-                                .frame(maxWidth: .infinity)
-                                .position(
-                                    x: geometry.size.width / 2, // Center horizontally
-                                    y: geometry.size.height * 0.2 // 20% from the top
-                                )
-                                .onAppear {
-                                    withAnimation(.easeOut(duration: 4)) {
-                                        textOpacity = 0.0
-                                    }
-                                    DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
-                                        showText = false
-                                    }
-                                }
-                        }
-                    }
-                    
-                }
-                .navigationTitle("Lucky Circles")
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    // Left-aligned items
-                    ToolbarItem(placement: .navigationBarLeading) {
-                        HStack {
-                            Text("\(howManyGuessesLeft) -")
-                                .font(.title3)
-                                .foregroundStyle(.blue)
-                            
-                            Text("\(viewModel.luckyCircles.count)")
-                                .font(.title3)
-                                .foregroundStyle(.blue)
-                            
-                            Button {
-                                viewGameDirections = true
-                            } label: {
-                                Image(systemName: "questionmark.circle")
-                                    .font(.callout)
-                                    .foregroundColor(.blue)
-                            }
-                        }
-                    }
-                    
-                    // Right-aligned toolbar view
-                    ToolbarItem(placement: .navigationBarTrailing) {
-                        ToolbarView(
+
+
+        }
+        .navigationTitle("Lucky Circles")
+        .navigationBarTitleDisplayMode(.inline)
+        .tint(GamePalette.circles)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button { viewGameDirections = true } label: { Image(systemName: "questionmark.circle") }
+                    .accessibilityLabel("How to play Lucky Circles")
+                    .disabled(isLoading || showingBetPopUp)
+            }
+        }
+        .sheet(isPresented: $viewGameDirections) {
+            GameRulesSheet(title: "How to play", rules: MockData.luckyCirclesDescription)
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            ToolbarView(
                             showingPowerUpSheet: $showingPowerUpSheet,
                             showingTriviaSheet: $showingTriviaSheet,
                             showingBetPopUp: $showingBetPopUp,
@@ -324,25 +205,78 @@ struct LuckyCirclesGameBoard: View {
                             triviaManager: triviaManager,
                             showBets: true,
                             user: user,
-                            mainGameType: MainGameType.circles
+                            mainGameType: MainGameType.circles,
+                            hasActiveBet: activeBet != nil,
+                            triviaCancelled: triviaCancelled
                         )
-                    }
-                }
-            }
-            
-            
+                .disabled(isLoading || lockBoard || showingBetPopUp)
+                .padding(.horizontal, 16).padding(.vertical, 12)
+                .frame(maxWidth: 900)
+                .frame(maxWidth: .infinity)
+                .background(.regularMaterial)
         }
         .onAppear {
-            startFlashingAnimation()
+            guard !hasStarted else { return }
+            hasStarted = true
             isLoading = false
-            howManyGuessesLeft = howManyGuessesToStart
             resetPowerUps()
             resetActivePowerUps()
+            howManyGuessesLeft = howManyGuessesToStart
             generateNextGuessedCircle()
         }
     }
-}
 
+    private var statusShelf: some View {
+        Group {
+            if showBetCoinViewpopUp {
+                GameNotice(text: "\(coinChangeNum >= 0 ? "+" : "")\(coinChangeNum) coins · Balance \(user.coins ?? 0)",
+                           symbol: "c.circle.fill", tint: coinChangeNum >= 0 ? .green : .red)
+                    .id(coinPopupID)
+                    .task {
+                        do { try await Task.sleep(for: .seconds(3)) } catch { return }
+                        showBetCoinViewpopUp = false
+                    }
+            } else if showCircleChangeViewpopUp {
+                GameNotice(text: "\(-circleChangeNum) circles removed · \(viewModel.luckyCircles.count) remaining",
+                           symbol: "circle.dotted", tint: GamePalette.circles)
+                    .id(circlePopupID)
+                    .task {
+                        do { try await Task.sleep(for: .seconds(3)) } catch { return }
+                        showCircleChangeViewpopUp = false
+                    }
+            } else if showBetText && !disapearingBetText.isEmpty {
+                GameNotice(text: disapearingBetText, symbol: "info.circle", tint: GamePalette.circles)
+                    .id(noticeID)
+                    .task {
+                        do { try await Task.sleep(for: .seconds(3)) } catch { return }
+                        showBetText = false
+                    }
+            } else {
+                GameNotice(text: lockBoard ? "The winning circle is revealed. Next round coming up…" : "Use power-ups to narrow the field.",
+                           symbol: lockBoard ? "eye" : "hand.tap", tint: .secondary)
+            }
+        }
+    }
+
+    private var gameBoard: some View {
+        GeometryReader { geometry in
+            ZStack {
+                GamePalette.surface
+                ForEach(viewModel.luckyCircles) { circle in
+                    LuckyCircleView(circle: circle, isCorrect: lockBoard && circle.id == nextCorrectCircle.id) {
+                        circleClicked(circle: circle)
+                    }
+                }
+                flashQuadrantBorder(in: geometry.size).allowsHitTesting(false)
+            }
+            .onChange(of: geometry.size, initial: true) { _, size in updateBoardBounds(size) }
+        }
+        .padding(12)
+        .background(GamePalette.surface, in: RoundedRectangle(cornerRadius: 24))
+        .overlay { RoundedRectangle(cornerRadius: 24).strokeBorder(GamePalette.circles.opacity(0.18), lineWidth: 1) }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+}
 
 private extension LuckyCirclesGameBoard {
     
@@ -401,37 +335,31 @@ private extension LuckyCirclesGameBoard {
     
     
     func resetDisapearingBetTextParams() {
+        noticeID = UUID()
         showBetText = true
         betTextOpacity = 1.0
     }
     
     func cancelBet() {
-        showBetCoinViewPopUp(totalCoins: user.coins!, numOfCoins: 0-(Int(currentActiveBet/3)), colorOfChange: .red)
-        user.coins =  user.coins! - Int(currentActiveBet/3)
         clearActiveBets()
     }
     
     func clearActiveBets() {
-        if(currentActiveBet > 0) {
-            showBetText(text: "Bet Cleared", colorOfText:.yellow)
-        }
-        currentActiveBet = 0
+        guard let bet = activeBet else { return }
+        user.coins = (user.coins ?? 0) + bet.cancellationRefund
+        user.luckyCirclesStats?.coinsWagered = (user.luckyCirclesStats?.coinsWagered ?? 0) + bet.stake
+        user.luckyCirclesStats?.coinsLost = (user.luckyCirclesStats?.coinsLost ?? 0) + bet.stake - bet.cancellationRefund
+        activeBet = nil
+        showBetText(text: "Bet canceled: \(bet.cancellationRefund) coins returned", colorOfText: .yellow)
     }
     
     func getActiveBetCancelOrNotMessage() -> String {
-        return "\(currentActiveBet) coins at \(formatOddsToFraction(getOddsForBet())) odds. \n\n *If you cancel your bet you get \(Int(currentActiveBet/3)) coins back"
+        guard let bet = activeBet else { return "No active bet" }
+        return "\(bet.stake) coins at \(CoinBet.oddsLabel(bet.odds)). Win: \(bet.payout) coins returned. Cancel: \(bet.cancellationRefund) coins returned."
     }
     
     func formatOddsToFraction(_ odds: CGFloat) -> String {
-        let roundedOdds = round(odds * 10) / 10
-        if roundedOdds > 1 {
-            return "\(Int(roundedOdds)) to 1"
-        } else if roundedOdds == 1 {
-            return "1 to 1"
-        } else {
-            let invertedOdds = 1 / roundedOdds
-            return "1 to \(Int(invertedOdds))"
-        }
+        return CoinBet.oddsLabel(Double(odds))
     }
     
     func isBettingActive() -> Bool {
@@ -450,9 +378,8 @@ private extension LuckyCirclesGameBoard {
     
     // Function to determine the number of circles in a specific quadrant
     func circlesInQuadrant(for quadrant: Quadrant, in size: CGSize, circles: [CGPoint]) -> Int {
-        let frame = quadrantFrame(in: size, quadrant: quadrant) // Get the frame for the quadrant
-
-        return circles.filter { frame.contains($0) }.count // Count circles that fall within the frame
+        guard quadrant != .none else { return 0 }
+        return circles.filter { determineQuadrant(for: $0, in: size) == quadrant }.count
     }
     
     // Function to extract all circle positions as an array of CGPoint
@@ -462,26 +389,17 @@ private extension LuckyCirclesGameBoard {
     
     
     func getOddsForBet() -> CGFloat {
-        var numOfCircles = viewModel.luckyCircles.count
-        
-        // Quadrant is active, so adjust the number of circles accordingly
-        if isPowerUpActive(id: "9") {
-            numOfCircles = circlesInQuadrant(for: targetQuadrant, in: screenSize, circles: getAllCirclePositions())
-        }
-        
-        let guesses = max(howManyGuessesLeft, 1) // Ensure at least 1 guess to avoid division by zero
-        
-        // Calculate the true odds using cumulative probability
-        let probabilityOfMissingAll = pow(CGFloat(numOfCircles - 1) / CGFloat(numOfCircles), CGFloat(guesses))
-        
-        let trueOdds = 1 / (1 - probabilityOfMissingAll)
-        let roundedOdds = max(1, Int(ceil(trueOdds)))
-
-        return CGFloat(roundedOdds)// Ensure odds never go below 1
+        let choices = isPowerUpActive(id: "9")
+            ? circlesInQuadrant(for: targetQuadrant, in: screenSize, circles: getAllCirclePositions())
+            : viewModel.luckyCircles.count
+        return CGFloat(CoinBet.odds(choices: choices, guesses: howManyGuessesLeft))
     }
     
     func userBetCoinsAction(coins:Int) {
-        currentActiveBet = coins
+        guard activeBet == nil,
+              let bet = CoinBet(stake: coins, balance: user.coins ?? 0, odds: Double(getOddsForBet())) else { return }
+        user.coins = (user.coins ?? 0) - bet.stake
+        activeBet = bet
     }
     
     // Flash the border of the correct quadrant
@@ -511,6 +429,7 @@ private extension LuckyCirclesGameBoard {
             .stroke(flashColor, lineWidth: borderWidth)
             .frame(width: borderFrame.width, height: borderFrame.height)
             .position(x: borderFrame.midX, y: borderFrame.midY)
+                            .allowsHitTesting(false)
             .animation(.easeInOut(duration: 1), value: targetQuadrant)
     }
     
@@ -560,73 +479,34 @@ private extension LuckyCirclesGameBoard {
     }
     
     func removeHalfOfTheCircles() {
-        // Get all circles except the correct one
-        let removableCircles = viewModel.luckyCircles.filter { $0.id != nextCorrectCircle.id }
-
-        // Ensure there are circles to remove
-        guard !removableCircles.isEmpty else { return }
-
-        // Calculate the number of circles to remove (half of the list)
-        let halfCount = removableCircles.count / 2
-        let initialCount = viewModel.luckyCircles.count
-
-        // Remove the first `halfCount` circles from the list
-        viewModel.luckyCircles.removeAll { circle in
-            removableCircles.prefix(halfCount).contains(where: { $0.id == circle.id })
-        }
-        let removedCount = initialCount - viewModel.luckyCircles.count
-        showCirclesChangeViewPopUp(totalCircles: initialCount, numOfCircles: 0-removedCount, colorOfChange: .purple)
-
+        let before = viewModel.luckyCircles.count
+        let removed = viewModel.cutInHalf(preserving: nextCorrectCircle.id)
+        showCirclesChangeViewPopUp(totalCircles: before, numOfCircles: -removed, colorOfChange: .purple)
     }
     
     func removeAmountFromCirclesIfNotHalf(amount:Int) {
-        // Get all circles except the correct one
-        let removableCircles = viewModel.luckyCircles.filter { $0.id != nextCorrectCircle.id }
-     
-        if(removableCircles.count >= amount) {
-            // Remove the first {{amount}} circles from the list
-            let initialCount = viewModel.luckyCircles.count
-            viewModel.luckyCircles.removeAll { circle in
-                removableCircles.prefix(amount).contains(where: { $0.id == circle.id })
-            }
-            let removedCount = initialCount - viewModel.luckyCircles.count
-            showCirclesChangeViewPopUp(totalCircles: initialCount, numOfCircles: 0-removedCount, colorOfChange: .purple)
-        } else {
-            //only remove half
-            showBetText(text: "Less than \(amount) Circles, Cut in Half", colorOfText: .red)
-            removeHalfOfTheCircles()
+        let before = viewModel.luckyCircles.count
+        let removed = viewModel.removeIncorrectCircles(upTo: amount, preserving: nextCorrectCircle.id)
+        if removed > 0 {
+            showCirclesChangeViewPopUp(totalCircles: before, numOfCircles: -removed, colorOfChange: .purple)
         }
     }
     
     func triviaDone(isCorrect:Bool) {
- 
-        if(isCorrect) {
-            if(isPowerUpActive(id: "6")) { // trivia easy remove 20
-                removeAmountFromCirclesIfNotHalf(amount: 20)
-            } else if(isPowerUpActive(id: "7")) { //medium reove 40
-                removeAmountFromCirclesIfNotHalf(amount: 40)
-            } else if(isPowerUpActive(id: "8")) { //hard remove 60
-                removeAmountFromCirclesIfNotHalf(amount: 60)
-            }
-            removeTriviaBasedOnTypeFromActivePowerUps(isCorrect: true)
+        if triviaManager.triviaType == "Mania" {
+            let stat = getPowerUpStat(id: "5")
+            stat.totalTriviaCorrects += triviaManager.score
+            if !isCorrect { stat.totalTriviaInCorrects += 1 }
+            removeAmountFromCirclesIfNotHalf(amount: triviaManager.score * 5)
+            removeFromActivePowerUps(id: "5")
         } else {
-            if(isPowerUpActive(id: "5")) { // trivia mania is active so count them
-                let toRemove = triviaManager.score*5
-                getPowerUpStat(id: getTrivaIdBasedOnType()).totalTriviaCorrects += triviaManager.score
-                getPowerUpStat(id: getTrivaIdBasedOnType()).totalTriviaInCorrects += 1
-                
-                removeAmountFromCirclesIfNotHalf(amount: toRemove)
-
-                removeFromActivePowerUps(id:getTrivaIdBasedOnType())
-            } else {
-                //for circles game we don't restart on incorrect trivia guess
-                //circleClickedIsInCorrect()
-                removeTriviaBasedOnTypeFromActivePowerUps(isCorrect: false)
+            if isCorrect {
+                let amount = triviaManager.triviaType == "Easy" ? 20 : triviaManager.triviaType == "Medium" ? 40 : 60
+                removeAmountFromCirclesIfNotHalf(amount: amount)
             }
+            removeTriviaBasedOnTypeFromActivePowerUps(isCorrect: isCorrect)
         }
-        
         resetTriviaManager()
-        
     }
     
     func removeTriviaBasedOnTypeFromActivePowerUps(isCorrect: Bool) {
@@ -648,7 +528,7 @@ private extension LuckyCirclesGameBoard {
         case "Hard":
             return "8"
         case "Mania":
-            return "9"
+            return "5"
         default:
             return ""
         }
@@ -658,6 +538,19 @@ private extension LuckyCirclesGameBoard {
         return activePowerUps.contains(where: {$0.id == id})
     }
     
+    func triviaCancelled() {
+        let id = getTrivaIdBasedOnType()
+        if let powerUp = activePowerUps.first(where: { $0.id == id }) {
+            user.coins = (user.coins ?? 0) + powerUp.costOfCoins
+            powerUp.isLocked = false
+            let stat = getPowerUpStat(id: id)
+            stat.totalTimesUsed = max(0, stat.totalTimesUsed - 1)
+            powerUpsUsedForCurrentScore = max(0, powerUpsUsedForCurrentScore - 1)
+            removeFromActivePowerUps(id: id)
+        }
+        triviaManager.resetManager()
+    }
+
     func resetTriviaManager() {
         triviaManager.resetManager()
     }
@@ -674,7 +567,18 @@ private extension LuckyCirclesGameBoard {
     
     
     func powerUpChosen(powerUp: PowerUp) {
+        guard !lockBoard, !isLoading, activeBet == nil, !powerUp.isLocked, powerUp.costOfCoins <= (user.coins ?? 0) else { return }
         
+        let colorsNeeded = powerUp.id == "3" ? 1 : powerUp.id == "10" ? 2 : powerUp.id == "11" ? 3 : 0
+        if colorsNeeded > viewModel.removableColors(preserving: nextCorrectCircle.id).count {
+            showBetText(text: "Not enough removable colors. Power-up kept; no coins charged.", colorOfText: .yellow)
+            return
+        }
+        if powerUp.id == "2" && viewModel.luckyCircles.count < 2 {
+            showBetText(text: "Only the winning circle remains. Power-up kept.", colorOfText: .yellow)
+            return
+        }
+
         powerUp.isLocked = true
         activePowerUps.append(powerUp)
         
@@ -689,40 +593,12 @@ private extension LuckyCirclesGameBoard {
         case "1"://free pass
             clearActiveBets()
             circleClicked(circle: LuckyCircle(id: "free pass", name: "free pass", color: .white, isDisabled: false, size: 0.0,position: CGPoint(x: 5, y: 5)))
-        case "2"://50%
-            // Get all circles except the correct one
-            let removableCircles = viewModel.luckyCircles.filter { $0.id != nextCorrectCircle.id }
-
-            // Ensure there are circles to remove
-            guard !removableCircles.isEmpty else { return }
-
-            // Calculate the number of circles to remove (half of the list)
-            let halfCount = removableCircles.count / 2
-            let initialCount = viewModel.luckyCircles.count
-
-            // Remove the first `halfCount` circles from the list
-            viewModel.luckyCircles.removeAll { circle in
-                removableCircles.prefix(halfCount).contains(where: { $0.id == circle.id })
-            }
-            
-            showCirclesChangeViewPopUp(totalCircles: initialCount, numOfCircles: 0-halfCount, colorOfChange: .purple)
-
-        case "3": //remove one color
-            // Get a set of unique colors excluding the correct circle's color
-            var uniqueColors = Set(viewModel.luckyCircles.map { $0.color })
-            uniqueColors.remove(nextCorrectCircle.color)
-
-            // Ensure there's at least one color to remove
-            guard let colorToRemove = uniqueColors.randomElement() else {
-                showBetText(text: "Only One Color Left", colorOfText: .red)
-                return
-            }
-             
-            // Remove circles with the randomly selected incorrect color
-            let initialCount = viewModel.luckyCircles.count
-            viewModel.luckyCircles.removeAll { $0.color == colorToRemove }
-            let removedCount = initialCount - viewModel.luckyCircles.count
-            showCirclesChangeViewPopUp(totalCircles: initialCount, numOfCircles: 0-removedCount, colorOfChange: colorToRemove)
+        case "2": removeHalfOfTheCircles()
+        case "3", "10", "11":
+            let count = powerUp.id == "3" ? 1 : powerUp.id == "10" ? 2 : 3
+            let before = viewModel.luckyCircles.count
+            let removed = viewModel.removeColors(count: count, preserving: nextCorrectCircle.id)
+            showCirclesChangeViewPopUp(totalCircles: before, numOfCircles: -removed, colorOfChange: .purple)
         case "4"://Two guesses
             twoGuesses()
         case "5"://Trivia mania
@@ -738,51 +614,13 @@ private extension LuckyCirclesGameBoard {
             clearActiveBets()
             
             //not a circle yet
-            if(nextCorrectCircle.id == "99") {
+            if(nextCorrectCircle.id == "unselected") {
                 generateNextGuessedCircle()
             }
            
             // Determine the quadrant for the target circle
             targetQuadrant = determineQuadrant(for: nextCorrectCircle.position, in: screenSize)
             
-        case "10"://remove two colors
-            // Get a set of unique colors excluding the correct circle's color
-            var uniqueColors = Set(viewModel.luckyCircles.map { $0.color })
-            uniqueColors.remove(nextCorrectCircle.color)
-
-            // Ensure there are at least two colors to remove
-            guard uniqueColors.count >= 2 else {
-                showBetText(text: "Only One or Two Colors Left", colorOfText: .red)
-                return
-            }
-
-            // Select two random incorrect colors
-            let colorsToRemove = Array(uniqueColors.shuffled().prefix(2))
-            let initialCount = viewModel.luckyCircles.count
-
-            // Remove circles with the selected incorrect colors
-            viewModel.luckyCircles.removeAll { colorsToRemove.contains($0.color) }
-            let removedCount = initialCount - viewModel.luckyCircles.count
-            showCirclesChangeViewPopUp(totalCircles: initialCount, numOfCircles: 0-removedCount, colorOfChange: .purple)
-        case "11"://remove three colors
-            // Get a set of unique colors excluding the correct circle's color
-            var uniqueColors = Set(viewModel.luckyCircles.map { $0.color })
-            uniqueColors.remove(nextCorrectCircle.color)
-
-            // Ensure there are at least two colors to remove
-            guard uniqueColors.count >= 3 else {
-                showBetText(text: "Only One or Two or Three Colors Left", colorOfText: .red)
-                return
-            }
-
-            // Select two random incorrect colors
-            let colorsToRemove = Array(uniqueColors.shuffled().prefix(3))
-            let initialCount = viewModel.luckyCircles.count
-
-            // Remove circles with the selected incorrect colors
-            viewModel.luckyCircles.removeAll { colorsToRemove.contains($0.color) }
-            let removedCount = initialCount - viewModel.luckyCircles.count
-            showCirclesChangeViewPopUp(totalCircles: initialCount, numOfCircles: 0-removedCount, colorOfChange: .purple)
         case "12": adForCoins()
         default:
             print("default")
@@ -791,19 +629,28 @@ private extension LuckyCirclesGameBoard {
         
     }
     
-    func adForCoins()  {
-        removeFromActivePowerUps(id:"12")
+    func adForCoins() {
+        removeFromActivePowerUps(id: "12")
         isLoading = true
-        Task {
+        Task { @MainActor in
             await rewardViewModel.loadAd()
-            isLoading = false
             rewardViewModel.showAd { reward in
-                user.coins = user.coins! + reward
+                isLoading = false
+                user.coins = (user.coins ?? 0) + reward
+                if reward == 0 {
+                    powerUps.first(where: { $0.id == "12" })?.isLocked = false
+                    let stat = getPowerUpStat(id: "12")
+                    stat.totalTimesUsed = max(0, stat.totalTimesUsed - 1)
+                    powerUpsUsedForCurrentScore = max(0, powerUpsUsedForCurrentScore - 1)
+                    showBetText(text: "No ad reward received. You can try again.", colorOfText: .yellow)
+                }
             }
         }
     }
-    
+
     func circleClicked(circle:LuckyCircle) {
+        guard !lockBoard, !isLoading, !showingBetPopUp else { return }
+        guard isPowerUpActive(id: "1") || viewModel.luckyCircles.contains(where: { $0 === circle && !$0.isDisabled }) else { return }
         timesGuessed += 1
         
         //Before seeing if guess is correct
@@ -819,7 +666,7 @@ private extension LuckyCirclesGameBoard {
         
         
         //not a correct circle yet
-        if(nextCorrectCircle.id == "99") {
+        if(nextCorrectCircle.id == "unselected") {
             generateNextGuessedCircle()
         }
         
@@ -847,6 +694,16 @@ private extension LuckyCirclesGameBoard {
         }
     }
     
+    func updateBoardBounds(_ bounds: CGSize) {
+        guard bounds.width > 0, bounds.height > 0 else { return }
+        viewModel.updateBounds(bounds)
+        screenSize = bounds
+        quadGeoSize = bounds
+        if isPowerUpActive(id: "9") {
+            targetQuadrant = determineQuadrant(for: nextCorrectCircle.position, in: bounds)
+        }
+    }
+
     func resetCircles() {
         viewModel.resetCircles()
         lockBoard = false
@@ -861,6 +718,7 @@ private extension LuckyCirclesGameBoard {
         timesGuessedWrong = 0
         toggleScoreView()
         checkHighscore()
+        showBetText(text: "Round cleared · \(score) points", colorOfText: .green)
         enableAllCircles()
         resetPowerUps()
         resetCircles()
@@ -881,24 +739,26 @@ private extension LuckyCirclesGameBoard {
     
     func checkActiveBetsCorrect() {
         if(currentActiveBet > 0) {
-            showBetCoinViewPopUp(totalCoins: user.coins!, numOfCoins: (Int(getPayoutFromBet())), colorOfChange: .green)
+            showBetCoinViewPopUp(totalCoins: user.coins!, numOfCoins: (activeBet?.payout ?? 0), colorOfChange: .green)
             //showBetText(text: "Bet Won: +\(Int(getPayoutFromBet()))c", colorOfText:.green)
             updateBettingStatsCorrect()
-            user.coins = user.coins! + Int(getPayoutFromBet())
-            currentActiveBet = 0
+            user.coins = (user.coins ?? 0) + (activeBet?.payout ?? 0)
+            activeBet = nil
         }
     }
     
     func resetDisapearingBetCoinViewParams() {
+        coinPopupID = UUID()
         showBetCoinViewpopUp = true
     }
     
     func resetDisapearingCirclesChangeViewParams() {
+        circlePopupID = UUID()
         showCircleChangeViewpopUp = true
     }
     
     func getPayoutFromBet() -> CGFloat {
-        return CGFloat(currentActiveBet) * getOddsForBet()
+        return CGFloat(activeBet?.winnings ?? 0)
     }
     
     
@@ -917,9 +777,9 @@ private extension LuckyCirclesGameBoard {
     }
     
     func showCirclesChangeViewPopUp(totalCircles: Int, numOfCircles:Int, colorOfChange:Color) {
-        coinTotal = totalCircles
-        coinChangeColor = colorOfChange
-        coinChangeNum = numOfCircles
+        circleTotal = totalCircles
+        circleChangeColor = colorOfChange
+        circleChangeNum = numOfCircles
         resetDisapearingCirclesChangeViewParams()
     }
     
@@ -931,6 +791,7 @@ private extension LuckyCirclesGameBoard {
     func circleClickedIsInCorrect() {
         // Show the correct circle for 1 second before proceeding with the rest of the logic
         lockBoard = true
+        checkActiveBetsInCorrect()
         flashCorrectCircle()
         
         // Delay the rest of the actions by 1 second so the user can see the correct circle
@@ -973,11 +834,11 @@ private extension LuckyCirclesGameBoard {
     
     func checkActiveBetsInCorrect() {
         if(currentActiveBet > 0) {
-            showBetCoinViewPopUp(totalCoins: user.coins!,numOfCoins: 0-currentActiveBet, colorOfChange: .red)
+            showBetCoinViewPopUp(totalCoins: (user.coins ?? 0) + currentActiveBet,numOfCoins: 0-currentActiveBet, colorOfChange: .red)
             //showBetText(text: "Bet Lost: -\(currentActiveBet)c", colorOfText:.red)
             updateBettingStatsInCorrect()
-            user.coins = user.coins! - currentActiveBet
-            currentActiveBet = 0
+            // The stake was reserved when the bet was placed.
+            activeBet = nil
         }
     }
     
@@ -1013,12 +874,7 @@ private extension LuckyCirclesGameBoard {
     
      
     func removeFromActivePowerUps(id:String) {
-        if let index = activePowerUps.enumerated().first(where: {$0.element.id == id}) {
-            // do something with foo.offset and foo.element
-            activePowerUps.remove(at: index.offset)
-        } else {
-            // item could not be found
-        }
+        activePowerUps.removeAll { $0.id == id }
     }
      
     func trivia(type:String) {
@@ -1042,5 +898,7 @@ extension Color {
 }
 
 #Preview {
+    NavigationStack {
     LuckyCirclesGameBoard(user: MockData.defUser, powerUps: MockData.circlePowerUps)
+    }
 }

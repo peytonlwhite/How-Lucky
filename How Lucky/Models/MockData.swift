@@ -10,17 +10,17 @@ import SwiftUICore
 
 class MockData {
     
-    static let initUser: User = User(id: "1", luckySquaresStats: initLuckySquareStats,
+    static var initUser: User { User(id: "1", luckySquaresStats: initLuckySquareStats,
                                     luckyCirclesStats:initLuckyCirclesStats,
                                      luckyPatternsStats: LuckyPatternsStats(highScore: 0, powerUpsUsedForHighscore: 0, totalTimesPlayed: 0, totalTimesIncorrectInRow: 0, powerUpStats: []),
                                      coins:initUserCoins,
                                      appLastOpened: Calendar.current.date(byAdding: .day, value: -2, to: Date())!,
                                      resetCoinsUsed: 0,
-                                     resetStatsUsed: 0)
+                                     resetStatsUsed: 0) }
     
     //Calendar.current.date(byAdding: .day, value: -2, to: Date()) ?? Date()
     
-    static let initLuckySquareStats:LuckySquaresStats = LuckySquaresStats(highScore: 0, powerUpsUsedForHighscore: 0, totalTimesPlayed: 0, totalTimesIncorrectInRow: 0, powerUpStats: [
+    static var initLuckySquareStats:LuckySquaresStats { LuckySquaresStats(highScore: 0, powerUpsUsedForHighscore: 0, totalTimesPlayed: 0, totalTimesIncorrectInRow: 0, powerUpStats: [
         PowerUpStats(id: "1", name: "Free Pass", totalTimesUsed: 0, isTrivia: false, totalTriviaCorrects: 0, totalTriviaInCorrects: 0, coinsWon: 0, coinsLost: 0, coinsWagered: 0),
         PowerUpStats(id: "2", name: "50/50", totalTimesUsed: 0, isTrivia: false, totalTriviaCorrects: 0, totalTriviaInCorrects: 0, coinsWon: 0, coinsLost: 0, coinsWagered: 0),
         PowerUpStats(id: "3", name: "Lucky Restart", totalTimesUsed: 0, isTrivia: false, totalTriviaCorrects: 0, totalTriviaInCorrects: 0, coinsWon: 0, coinsLost: 0, coinsWagered: 0),
@@ -32,9 +32,9 @@ class MockData {
         PowerUpStats(id: "9", name: "Trivia Mania", totalTimesUsed: 0, isTrivia: true, totalTriviaCorrects: 0, totalTriviaInCorrects: 0, coinsWon: 0, coinsLost: 0, coinsWagered: 0),
         PowerUpStats(id: "10", name: "Reset PowerUps", totalTimesUsed: 0, isTrivia: false, totalTriviaCorrects: 0, totalTriviaInCorrects: 0, coinsWon: 0, coinsLost: 0, coinsWagered: 0),
         PowerUpStats(id: "12", name: "Ad For Coins", totalTimesUsed: 0, isTrivia: false, totalTriviaCorrects: 0, totalTriviaInCorrects: 0, coinsWon: 0, coinsLost: 0, coinsWagered: 0)
-    ], coinsWon: 0, coinsLost: 0, coinsWagered: 0)
+    ], coinsWon: 0, coinsLost: 0, coinsWagered: 0) }
     
-    static let initLuckyCirclesStats: LuckyCirclesStats = LuckyCirclesStats(highScore: 0, powerUpsUsedForHighscore: 0, totalTimesPlayed: 0, totalTimesIncorrectInRow: 0,powerUpStats: [
+    static var initLuckyCirclesStats: LuckyCirclesStats { LuckyCirclesStats(highScore: 0, powerUpsUsedForHighscore: 0, totalTimesPlayed: 0, totalTimesIncorrectInRow: 0,powerUpStats: [
         PowerUpStats(id: "1", name: "Free Pass", totalTimesUsed: 0, isTrivia: false, totalTriviaCorrects: 0, totalTriviaInCorrects: 0, coinsWon: 0, coinsLost: 0, coinsWagered: 0),
         PowerUpStats(id: "2", name: "Cut in Half", totalTimesUsed: 0, isTrivia: false, totalTriviaCorrects: 0, totalTriviaInCorrects: 0, coinsWon: 0, coinsLost: 0, coinsWagered: 0),
         PowerUpStats(id: "3", name: "Remove a Color", totalTimesUsed: 0, isTrivia: false, totalTriviaCorrects: 0, totalTriviaInCorrects: 0, coinsWon: 0, coinsLost: 0, coinsWagered: 0),
@@ -47,11 +47,11 @@ class MockData {
         PowerUpStats(id: "11", name: "Remove Three colors", totalTimesUsed: 0, isTrivia: false, totalTriviaCorrects: 0, totalTriviaInCorrects: 0, coinsWon: 0, coinsLost: 0, coinsWagered: 0),
         PowerUpStats(id: "10", name: "Remove Two colors", totalTimesUsed: 0, isTrivia: false, totalTriviaCorrects: 0, totalTriviaInCorrects: 0, coinsWon: 0, coinsLost: 0, coinsWagered: 0),
         PowerUpStats(id: "12", name: "Ad For Coins", totalTimesUsed: 0, isTrivia: false, totalTriviaCorrects: 0, totalTriviaInCorrects: 0, coinsWon: 0, coinsLost: 0, coinsWagered: 0)
-    ], coinsWon: 0, coinsLost: 0, coinsWagered: 0)
+    ], coinsWon: 0, coinsLost: 0, coinsWagered: 0) }
     
     static let initUserCoins:Int = 300
     
-    static let defUser: User = User(id: "2", luckySquaresStats:
+    static var defUser: User { User(id: "2", luckySquaresStats:
                                         LuckySquaresStats(highScore: 50, powerUpsUsedForHighscore: 3, totalTimesPlayed: 22, totalTimesIncorrectInRow: 4,
                                                                                 powerUpStats: [
                                                                                     PowerUpStats(id: "1", name: "Free Pass", totalTimesUsed: 4, isTrivia: false, totalTriviaCorrects: 0, totalTriviaInCorrects: 0, coinsWon: 0, coinsLost: 0, coinsWagered: 0),
@@ -86,11 +86,11 @@ class MockData {
                                         luckyPatternsStats: LuckyPatternsStats(highScore: 0, powerUpsUsedForHighscore: 0, totalTimesPlayed: 0, totalTimesIncorrectInRow: 0, powerUpStats: []),
                                         coins:10, appLastOpened: Calendar.current.date(byAdding: .day, value: -2, to: Date()) ?? Date(),
                                         resetCoinsUsed: 0,
-                                        resetStatsUsed: 0)
+                                        resetStatsUsed: 0) }
     
-    static let freePassPowerUp: PowerUp = PowerUp(id: "1", name: "Free Pass", color: .yellow, isLocked: false, description: "Free Points!", costOfCoins: 0)
+    static var freePassPowerUp: PowerUp { PowerUp(id: "1", name: "Free Pass", color: .yellow, isLocked: false, description: "Free Points!", costOfCoins: 0) }
    
-    static let squarePowerUps: [PowerUp] = [
+    static var squarePowerUps: [PowerUp] { [
         PowerUp(id:"2", name: "50/50", color: .blue, isLocked: false,
                 description: "Go back to 2 squares to get an extra point", costOfCoins: 10),
         PowerUp(id:"3", name: "Lucky Restart", color: .orange, isLocked: false,
@@ -110,10 +110,10 @@ class MockData {
         PowerUp(id:"11", name: "Trivia Hard", color: .indigo, isLocked: false,
                 description: "Get a hard triva question correct to gain another point", costOfCoins: 0),
         PowerUp(id:"12", name: "Ad For Coins", color: .random, isLocked: false,
-                description: "Get 5 Coins for an ad", costOfCoins: 0)
-    ]
+                description: "Watch an ad to earn coins", costOfCoins: 0)
+    ] }
     
-    static let circlePowerUps: [PowerUp] = [
+    static var circlePowerUps: [PowerUp] { [
         PowerUp(id:"2", name: "Cut in Half", color: .blue, isLocked: false,
                 description: "remove half of the circles", costOfCoins: 0),
         PowerUp(id:"3", name: "Remove a color", color: .red, isLocked: false,
@@ -135,12 +135,12 @@ class MockData {
         PowerUp(id:"11", name: "Remove three colors", color: .pink, isLocked: false,
                 description: "Get rid of all the (blue, green, and pink) circles", costOfCoins: 5),
         PowerUp(id:"12", name: "Ad For Coins", color: .random, isLocked: false,
-                description: "Get 5 Coins for an ad", costOfCoins: 0)
+                description: "Watch an ad to earn coins", costOfCoins: 0)
         
        
-    ]
+    ] }
     
-     static let patternPowerUps: [PowerUp] = [
+     static var patternPowerUps: [PowerUp] { [
          PowerUp(id:"2", name: "50/50", color: .blue, isLocked: false,
                  description: "Go back to 2 squares to get an extra point", costOfCoins: 1),
          PowerUp(id:"3", name: "Lucky Restart", color: .orange, isLocked: false,
@@ -160,8 +160,8 @@ class MockData {
          PowerUp(id:"11", name: "Trivia Hard", color: .indigo, isLocked: false,
                  description: "Get a hard triva question correct to gain another point", costOfCoins: 0),
          PowerUp(id:"12", name: "Ad For Coins", color: .random, isLocked: false,
-                 description: "Get 5 Coins for an ad", costOfCoins: 0)
-     ]
+                 description: "Watch an ad to earn coins", costOfCoins: 0)
+     ] }
     
 
     static let luckySquaresDescription: LocalizedStringKey = "**1. The Goal** \n Your objective is to select the **correct square** hidden on the board. At the start, there are **2 squares**, but only **1 is correct**.\n\n **2. Progression** \n- If you pick the correct square, you’ll move to the next round.\n- In each round, the number of squares increases by **1**, but there’s still only **1 correct square**.\n\n **3. Power-Ups** \nUse power-ups to improve your chances and climb to a **higher score**:\n\n **4. Betting Coins** \n- You can bet your coins to **increase your rewards**.\n- The higher your bet, the more coins you can win!\n- But beware: if you guess wrong, you’ll lose the coins.\n\n **5. Winning Streaks** \nBuild up your streaks to boost your high score. Each correct guess adds to your streak! \n - You can also bet on the trivia power up. \n\n **6. Tips** \n - Top Bar: In order Left to Right the numbers at top are: Tries left, Squares count."
@@ -172,15 +172,10 @@ class MockData {
     static let luckySquaresBetDescription: LocalizedStringKey = "You are betting on the chance you will guess the correct square given each turn the correct square changes without you knowing which one it is"
     
     static let luckyCirclesBetDescription: LocalizedStringKey = """
-        **Dynamic Odds System** 
-    
-    You are betting on the chance to guess the correct circle within **Your Guesses left** attempts. Instead of a simple division of circles by guesses, we use a **true probability-based odds system** to ensure fairness.  
+    Bet on finding the winning circle within your remaining guesses. Incorrect circles are removed, so the chance of winning is guesses divided by eligible circles (up to 100%). A quadrant hint limits eligible circles to that quadrant.
 
-    - **Odds reflect real probability**, factoring in multiple attempts rather than a flat ratio.  
-    - If there are **250 circles** and you have **6 guesses**, your odds adjust to reflect your increasing chances over multiple tries.  
-    - **Quadrant power-ups** modify the calculation by reducing the total circles in play.  
+    With 250 circles and 6 guesses, the chance is 6/250 (2.4%). Net winnings are approximately 40.67 coins per coin staked, rounded down to whole coins for the complete bet.
 
-    This ensures a **balanced and accurate** betting system. **Canceling your bet** refunds only **1/3 of your coins**.
+    The stake is deducted when you place the bet. Odds stay fixed until it ends. Power-ups are unavailable while betting. A win returns the stake plus winnings; canceling returns one third of the stake. Leaving an unfinished game forfeits the stake.
     """
-
 }

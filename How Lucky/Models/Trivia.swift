@@ -8,6 +8,7 @@
 import Foundation
 
 struct Trivia: Decodable {
+    var responseCode: Int
     var results: [TriviaResult]
     
 }

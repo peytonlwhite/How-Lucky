@@ -1,0 +1,42 @@
+name: iOS checks
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Select simulator
+        run: |
+          xcodebuild -version
+          DEVICE=$(xcrun simctl list devices available -j | python3 -c 'import json,sys; d=json.load(sys.stdin); print(next(v["udid"] for k,vs in sorted(d["devices"].items(), reverse=True) if "iOS" in k for v in vs if "iPhone" in v["name"]))')
+          echo "SIMULATOR_ID=$DEVICE" >> "$GITHUB_ENV"
+      - name: Build and run unit tests
+        run: |
+          set -o pipefail
+          xcodebuild test -project "How Lucky.xcodeproj" -scheme "How Lucky" \
+            -destination "platform=iOS Simulator,id=$SIMULATOR_ID" \
+            -only-testing:How\ LuckyTests -parallel-testing-enabled NO \
+            -resultBundlePath TestResults.xcresult CODE_SIGNING_ALLOWED=NO \
+            2>&1 | tee xcodebuild.log | xcbeautify
+      - name: Save diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-test-results
+          path: |
+            xcodebuild.log
+            TestResults.xcresult
+          retention-days: 7

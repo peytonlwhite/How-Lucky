@@ -13,8 +13,8 @@ import SwiftUI
     let name:String
     let color:Color
     var isDisabled:Bool
-    let size:CGFloat
-    let position:CGPoint
+    var size:CGFloat
+    var position:CGPoint
     
     init(id: String, name:String, color: Color, isDisabled: Bool, size:CGFloat, position:CGPoint) {
         self.id = id

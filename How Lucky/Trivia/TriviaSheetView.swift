@@ -16,10 +16,13 @@ struct TriviaSheetView: View {
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var triviaManager:TriviaManager
     var function: (_ isCorrect: Bool) -> Void
-    @State private var currentActiveBet:Int = 0
+    @State private var activeBet: CoinBet?
+    private var currentActiveBet: Int { activeBet?.stake ?? 0 }
     @State private var showingBetPopUp = true
     let user:User
     let mainGameType: MainGameType
+    var onLoadCancelled: () -> Void = {}
+    @State private var isFinishing = false
     
     //bet text props
     @State private var showBetText = true
@@ -37,6 +40,7 @@ struct TriviaSheetView: View {
     var body: some View {
         NavigationView {
             ZStack {
+                ScrollView {
                 VStack(spacing: 40) {
                     HStack {
                         Text("Trivia \(triviaManager.triviaType)")
@@ -66,7 +70,18 @@ struct TriviaSheetView: View {
                     }
                     
                     // Popup for bet
-                    if (showingBetPopUp && currentActiveBet > 0) {
+                    if triviaManager.isLoading || (triviaManager.length == 0 && triviaManager.errorMessage == nil) {
+                        ProgressView("Loading trivia…")
+                    } else if let error = triviaManager.errorMessage {
+                        Text(error)
+                        Button("Retry") {
+                            Task { await triviaManager.retry() }
+                        }
+                        Button("Cancel and return power-up") {
+                            onLoadCancelled()
+                            dismiss()
+                        }
+                    } else if (showingBetPopUp && currentActiveBet > 0) {
                             CustomDialogYesOrNo(
                                 isActive: $showingBetPopUp,
                                 title: "Current Bet",
@@ -75,7 +90,6 @@ struct TriviaSheetView: View {
                                 noButtonTitle: "Keep Bet"
                             ) { isYes in
                                 if isYes {
-                                    showBetCoinViewPopUp(totalCoins: user.coins!, numOfCoins: 0 - Int(currentActiveBet/3), colorOfChange: .red)
                                     clearActiveBets()
                                 } else {
                                     //do nothing
@@ -85,8 +99,8 @@ struct TriviaSheetView: View {
                             BetPopUpView(
                                 useOffset: false,
                                 userCoins: user.coins ?? 0,
-                                bettingOnText: "You are betting on the chance you will guess this trivia answer correctly. \n - We Calculate the odds based on several factors. Some being \n 1. The average person's knowledge\n 2. The fact that most of the time you can cancel one answer out.\n 3. Type of trivia you are playing. ",
-                                bettingRulesText: "1. Enter the amount of coins you want to bet.\n2. Check the odds to calculate your potential winnings.\n3. If you don't have enough coins, you'll see an error.\n4. Click 'Bet' to confirm or 'Cancel' to exit.",
+                                bettingOnText: "Bet on answering this question correctly. Net odds are based on the number of answer choices: 1 to 1 for two choices and 3 to 1 for four choices.",
+                                bettingRulesText: "1. Enter the amount of coins you want to bet.\n2. Check the odds to calculate your potential winnings.\n3. If you don't have enough coins, you'll see an error.\n4. Your stake is deducted when you place the bet. A win returns your stake plus whole-coin winnings. Canceling returns one third of the stake. Leaving an unfinished game forfeits the stake.",
                                 cancelButtonText: "Don't Bet",
                                 titleText: "Bet On Trivia!",
                                 isActive: $showingBetPopUp, odds: CGFloat(getOddsForTriviaBet())
@@ -102,7 +116,7 @@ struct TriviaSheetView: View {
                             Text(triviaManager.question)
                                 .font(.system(size: 20))
                                 .bold()
-                                .foregroundColor(.gray)
+                                .foregroundStyle(.primary)
 
                             // When answer is clicked, go to next question or close the sheet if done
                             ForEach(triviaManager.answerChoices, id: \.id) { answer in
@@ -117,9 +131,10 @@ struct TriviaSheetView: View {
 
                     
                 }
+                }
                 .padding()
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-                .background(Color(hex: "#e6e6ff"))
+                .background(GamePalette.canvas)
                 
                 // Disappearing Text for bets - Overlay in ZStack
                 if showBetText {
@@ -135,6 +150,7 @@ struct TriviaSheetView: View {
                                 x: geometry.size.width / 2, // Center horizontally
                                 y: geometry.size.height * 0.05 // Position 10% from the top
                             )
+                            .allowsHitTesting(false)
                             .onAppear {
                                 withAnimation(.easeOut(duration: 4)) {
                                     betTextOpacity = 0.0
@@ -154,6 +170,7 @@ struct TriviaSheetView: View {
                                 x: geometry.size.width / 2, // Center horizontally
                                 y: geometry.size.height * 0.2 // 20% from the top
                             )
+                            .allowsHitTesting(false)
                             .onAppear {
                                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.75) {
                                     showBetCoinViewpopUp = false
@@ -163,43 +180,40 @@ struct TriviaSheetView: View {
                 }
             }
             .navigationBarBackButtonHidden(true)
+            .interactiveDismissDisabled()
         }
     }
 }
 
 private extension TriviaSheetView {
     func answerClicked(isCorrect:Bool) {
-        
-        if(isCorrect) {
-            triviaManager.goToNextQuestion()
-        } else if (!isMania()) {
-            triviaManager.goToNextQuestion()
-        }
 
-        if(isCorrect) {
+        guard !isFinishing else { return }
+        if isCorrect {
             checkActiveBetsCorrect()
-            if(triviaManager.reachedEnd) {
-                dismissAfterSelection(correct:true)
+            triviaManager.goToNextQuestion()
+            if triviaManager.reachedEnd {
+                dismissAfterSelection(correct: true)
             }
         } else {
             checkActiveBetsInCorrect()
             highlightCorrectAnswer()
-            dismissAfterSelection(correct:false)
+            dismissAfterSelection(correct: false)
         }
     }
-    
+
     func highlightCorrectAnswer() {
         showCorrectAnswer = true
     }
     
     func checkActiveBetsCorrect() {
         if(hasActiveBet()) {
-            showBetCoinViewPopUp(totalCoins: user.coins!,numOfCoins: (Int(getPayoutFromBet())), colorOfChange: .green)
+            showBetCoinViewPopUp(totalCoins: user.coins!,numOfCoins: (activeBet?.payout ?? 0), colorOfChange: .green)
 
             //showBetText(text: "Bet Won: +\(Int(getPayoutFromBet()))c",colorOfText:.green)
             updateBettingStatsCorrect()
-            user.coins = (user.coins ?? 0) + Int(getPayoutFromBet())
-            currentActiveBet = 0
+            user.coins = (user.coins ?? 0) + (activeBet?.payout ?? 0)
+            activeBet = nil
         }
     }
     
@@ -208,6 +222,7 @@ private extension TriviaSheetView {
     }
     
     func dismissAfterSelection(correct:Bool) {
+        isFinishing = true
         let howLongToWait: Int = 2
         DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(howLongToWait)) {
             function(correct)
@@ -216,14 +231,18 @@ private extension TriviaSheetView {
     }
     
     func getOddsForTriviaBet() -> CGFloat {
-        return  CGFloat(3) / CGFloat(1)
+        return CGFloat(CoinBet.odds(choices: triviaManager.answerChoices.count))
     }
     
     func clearActiveBets() {
-        if(currentActiveBet > 0) {
-            showBetText(text: "Bet Cleared",colorOfText:.yellow)
+        guard let bet = activeBet else { return }
+        user.coins = (user.coins ?? 0) + bet.cancellationRefund
+        if let stat = getPowerUpStat(id: getTrivaIdBasedOnType()) {
+            stat.coinsWagered = (stat.coinsWagered ?? 0) + bet.stake
+            stat.coinsLost = (stat.coinsLost ?? 0) + bet.stake - bet.cancellationRefund
         }
-        currentActiveBet = 0
+        activeBet = nil
+        showBetText(text: "Bet canceled: \(bet.cancellationRefund) coins returned", colorOfText: .yellow)
     }
     
     func showBetCoinViewPopUp(totalCoins: Int,numOfCoins:Int,colorOfChange:Color) {
@@ -239,7 +258,8 @@ private extension TriviaSheetView {
     }
     
     func getActiveBetCancelOrNotMessage() -> String {
-        return "\(currentActiveBet) coins at \(formatOddsToFraction(getOddsForTriviaBet())) odds. \n\n *If you cancel your bet you get \(Int(currentActiveBet/3)) coins back"
+        guard let bet = activeBet else { return "No active bet" }
+        return "\(bet.stake) coins at \(CoinBet.oddsLabel(bet.odds)). Win: \(bet.payout) coins returned. Cancel: \(bet.cancellationRefund) coins returned."
     }
     
     
@@ -304,7 +324,7 @@ private extension TriviaSheetView {
                 case "Hard":
                     return "8"
                 case "Mania":
-                    return "9"
+                    return "5"
                 default:
                     return ""
             }
@@ -323,33 +343,28 @@ private extension TriviaSheetView {
     
     
     func formatOddsToFraction(_ odds: CGFloat) -> String {
-        let roundedOdds = round(odds * 10) / 10
-        if roundedOdds > 1 {
-            return "\(Int(roundedOdds)) to 1"
-        } else if roundedOdds == 1 {
-            return "1 to 1"
-        } else {
-            let invertedOdds = 1 / roundedOdds
-            return "1 to \(Int(invertedOdds))"
-        }
+        return CoinBet.oddsLabel(Double(odds))
     }
     
     func userBetCoinsTriviaAction(coins:Int) {
-        currentActiveBet = coins
+        guard activeBet == nil,
+              let bet = CoinBet(stake: coins, balance: user.coins ?? 0, odds: Double(getOddsForTriviaBet())) else { return }
+        user.coins = (user.coins ?? 0) - bet.stake
+        activeBet = bet
     }
 
     
     func getPayoutFromBet() -> CGFloat {
-        return CGFloat(currentActiveBet) * getOddsForTriviaBet()
+        return CGFloat(activeBet?.winnings ?? 0)
     }
     
     func checkActiveBetsInCorrect() {
         if(currentActiveBet > 0) {
-            showBetCoinViewPopUp(totalCoins: user.coins!,numOfCoins: 0-currentActiveBet, colorOfChange: .red)
+            showBetCoinViewPopUp(totalCoins: (user.coins ?? 0) + currentActiveBet,numOfCoins: 0-currentActiveBet, colorOfChange: .red)
             //showBetText(text: "Bet Lost: -\(currentActiveBet)c",colorOfText:.red)
             updateBettingStatsInCorrect()
-            user.coins = (user.coins ?? 0) - currentActiveBet
-            currentActiveBet = 0
+            // The stake was reserved when the bet was placed.
+            activeBet = nil
         }
     }
     

@@ -32,19 +32,13 @@ struct How_LuckyApp: App {
                 // If no user is found, insert a mock user and return the container
                 let newUser = MockData.initUser
                 container.mainContext.insert(newUser)
+                try container.mainContext.save()
                 return container
             }
             
-            // Check if the new property exists and initialize if missing and pull from mock data
-            /*
-            if user.luckySquaresStats?.newPowerUpStat == nil {
-                // Initialize the missing property with default values
-                user.luckySquaresStats?.newPowerUpStat = PowerUpStat() // Replace this with your default initialization
-            }
-             */
-            
-            // Add other checks for new fields or properties you added
-            
+            user.repairMissingDefaults()
+            try container.mainContext.save()
+
             return container
         } catch {
             fatalError("Failed to create container")

@@ -13,6 +13,8 @@ import GoogleMobileAds
 struct GameOptionsView: View {
     
     @Environment(\.modelContext) var context
+    @Environment(\.scenePhase) private var scenePhase
+    @State private var isVisible = false
     //For UI work non prod
     //var users: [User] = [MockData.defUser]
     @Query var users: [User]
@@ -40,6 +42,10 @@ struct GameOptionsView: View {
     
     
     var body: some View {
+        Group {
+        if users.isEmpty {
+            ProgressView("Loading player…")
+        } else {
         ZStack {
             NavigationStack {
                 VStack(alignment:.leading, spacing: 1) {
@@ -54,6 +60,11 @@ struct GameOptionsView: View {
 
                 }
                 .padding(.top,30)
+                .onAppear {
+                    isVisible = true
+                    checkUserChecks()
+                }
+                .onDisappear { isVisible = false }
                 
                 
                 
@@ -142,14 +153,15 @@ struct GameOptionsView: View {
                 }
             }
         }
-        .onAppear {
-            logger.notice("\("TEST", privacy: .public)")
-            logger.log("Appear")
-            rewardViewModel.loadBannerAd()
-            
-            if(users.count > 0) {
-                checkUserChecks()
-            }
+        }
+        }
+        .onAppear { rewardViewModel.loadBannerAd() }
+        .onDisappear { isVisible = false }
+        .task(id: users.first?.id) {
+            if isVisible { checkUserChecks() }
+        }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active && isVisible { checkUserChecks() }
         }
         
     }
@@ -223,8 +235,8 @@ struct GameLabelView: View {
 private extension GameOptionsView {
     
     func increaseUserCoins() {
-        if(users[0].coins! < 25) {
-            users[0].coins = users[0].coins! + 1
+        if let user = users.first, (user.coins ?? 0) < 25 {
+            user.coins = (user.coins ?? 0) + 1
         }
     }
     
@@ -244,27 +256,10 @@ private extension GameOptionsView {
     }
     
     func checkUserChecks() {
-        
-        let currentDate = Date()
-        
-        guard let diffInHours = Calendar.current.dateComponents([.hour, .minute], from: users[0].appLastOpened!, to: currentDate).hour
-        else { return }
-        
-        
-        logger.info("curent date: \(currentDate)")
-        logger.info("users[0].appLastOpened: \(String(describing: users[0].appLastOpened))")
-        logger.info("diff in hours \(diffInHours)")
-        
-        //if first time opened or been more than a day give them coins and reset date
-        if(diffInHours > 23) {
-            logger.info("show pop up coins")
-            showingPopupCoins = true
-            users[0].appLastOpened = currentDate
-            users[0].coins = users[0].coins! + 5
-            logger.info("users[0].appLastOpened after set: \(String(describing: users[0].appLastOpened))")
-        }
-        
+        guard let user = users.first else { return }
+        if user.claimDailyReward() { showingPopupCoins = true }
     }
+
     
 }
 
@@ -277,7 +272,7 @@ extension Color {
         let a, r, g, b: UInt64
         switch hex.count {
         case 3: // RGB (12-bit)
-            (a, r, g, b) = (255, (int >> 8 * 17), (int >> 4 & 0xF) * 17, (int & 0xF) * 17)
+            (a, r, g, b) = (255, ((int >> 8) & 0xF) * 17, (int >> 4 & 0xF) * 17, (int & 0xF) * 17)
         case 6: // RGB (24-bit)
             (a, r, g, b) = (255, int >> 16, int >> 8 & 0xFF, int & 0xFF)
         case 8: // ARGB (32-bit)

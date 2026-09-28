@@ -1,51 +1,30 @@
-//
-//  LuckyCircleView.swift
-//  How Lucky
-//
-//  Created by Peyton White on 11/7/24.
-//
-
 import SwiftUI
 
 struct LuckyCircleView: View {
-    
-    let circle:LuckyCircle
-    let isCorrect:Bool
-    var onTap: () -> Void  // Closure that is called when the circle is tapped
+    let circle: LuckyCircle
+    // Only true during the end-of-round reveal, never during live play.
+    let isCorrect: Bool
+    var onTap: () -> Void
 
-    @State private var isBlinking = false
-
-    
     var body: some View {
         Circle()
-                    .fill(circle.isDisabled ? .clear : circle.color)
-                    .frame(width: circle.size, height: circle.size)
-                    .position(circle.position)
-                    .opacity(isCorrect && isBlinking ? 0.3 : 1.0) // Blinking effect
-                    .onAppear {
-                        if isCorrect {
-                            //startBlinking()
-                        }
-                    }
-                    .onTapGesture {
-                        onTap()
-                    }
-    }
-    
-    
-    private func startBlinking() {
-        withAnimation(Animation.easeInOut(duration: 0.5).repeatForever(autoreverses: true)) {
-            isBlinking.toggle()
-        }
-    }
-    
-}
-
-
-#Preview {
-    LuckyCircleView(circle: LuckyCircle(id: "1", name: "1", color: .blue, isDisabled: false, size: 50.0,
-                                        position: CGPoint(x: 50, y: 100)),
-                    isCorrect: true) {
-        //onTap
+            .fill(circle.color.gradient)
+            .overlay { Circle().strokeBorder(.white.opacity(0.65), lineWidth: 1.5) }
+            .overlay {
+                if isCorrect {
+                    Image(systemName: "checkmark").font(.system(size: max(12, circle.size / 3), weight: .heavy))
+                        .foregroundStyle(.white).shadow(color: .black.opacity(0.6), radius: 2)
+                }
+            }
+            .shadow(color: circle.color.opacity(0.2), radius: 3, y: 2)
+            .frame(width: circle.size, height: circle.size)
+            .contentShape(Circle())
+            .position(circle.position)
+            .opacity(circle.isDisabled ? 0.25 : 1)
+            .onTapGesture { if !circle.isDisabled { onTap() } }
+            .accessibilityLabel("Circle \(circle.name)")
+            .accessibilityValue(isCorrect ? "Winning circle" : "Available")
+            .accessibilityAddTraits(.isButton)
+            .accessibilityAction { if !circle.isDisabled { onTap() } }
     }
 }
