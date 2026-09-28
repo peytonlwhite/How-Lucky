@@ -33,7 +33,7 @@ Branch: `codex/gameplay-fixes`, based on `0189987`.
 
 On Windows: parsed all Swift files using the tree-sitter Swift grammar; no syntax errors. Checked the Git diff for whitespace errors. Independently checked the probability model by enumerating distinct guesses on small boards and compared whole-coin rounding against integer arithmetic for 13,804 board/guess/stake combinations.
 
-`How LuckyTests/RegressionTests.swift` adds 21 Swift Testing tests for odds, stake settlement, rounding, invalid wagers, independent defaults, save repair, trivia failures, and duplicate answer protection. These tests and the app build have **not run** here: this workspace has no Swift/Xcode toolchain. Syntax parsing is not Swift type checking or an iOS runtime test.
+`How LuckyTests/RegressionTests.swift` adds 21 Swift Testing tests for odds, stake settlement, rounding, invalid wagers, independent defaults, save repair, trivia failures, and duplicate answer protection. The local Windows checks were followed by successful Xcode 26.6 compilation and simulator execution on GitHub Actions. All test suites passed. See the TestFlight validation section below; hands-on device/UI checks remain pending.
 
 ## Before releasing from a Mac
 
@@ -59,7 +59,7 @@ Existing high scores are retained even if earned under the former scoring rules.
 - A successful trivia answer or Free Pass consumes an active Two Guesses effect, preventing its stale target from carrying into the next round.
 - Fixed red-channel parsing for three-digit hex colors.
 
-Added four regression tests for daily-reward boundaries/duplicate claims, missing dates/overflow, circle resize bounds/identity, and trivia decoding/identity. All 44 Swift files were syntax-parsed again without errors; Xcode type checking, test execution, and UI verification remain pending on a Mac.
+Added four regression tests for daily-reward boundaries/duplicate claims, missing dates/overflow, circle resize bounds/identity, and trivia decoding/identity. All 44 Swift files were syntax-parsed again without errors; subsequent GitHub Actions runs passed Xcode type checking and unit tests. Manual UI verification remains pending.
 
 Additional manual checks: dismiss the ad-continue prompt using X and the backdrop; repeatedly select trivia from the power-up sheet; background/foreground the home screen across a reward boundary; rotate and resize Circles with an active quadrant hint/bet; check long trivia questions at larger text sizes; and use Two Guesses followed by trivia or Free Pass before making another square guess.
 
@@ -82,7 +82,7 @@ Both games:
 - Failed/skipped coin ads roll back power-up usage counters as well as unlocking the retry.
 - Coin animations restart for each new event; older dismissal callbacks cannot hide a newer popup.
 
-Six additional regression tests cover 50/50 plus Lucky Restart/reuse/reset, exact halving and winner preservation, capped trivia removal, and unavailable color removal. All 44 Swift files passed syntax parsing and the diff passed whitespace checks. The 21 Swift tests still require execution in Xcode.
+Six additional regression tests cover 50/50 plus Lucky Restart/reuse/reset, exact halving and winner preservation, capped trivia removal, and unavailable color removal. All 44 Swift files passed syntax parsing and the diff passed whitespace checks. The 21 regression tests subsequently passed in the GitHub-hosted iOS simulator.
 
 Additional Mac checks: combine 50/50 with Lucky Restart, Two Guesses, trivia and Free Pass; reuse 50/50 after resetting power-ups; try Remove Three Colors when fewer than three non-winning colors remain; tap quickly during round transitions; and trigger circle-count changes while a coin popup is still visible.
 
@@ -97,6 +97,16 @@ Additional Mac checks: combine 50/50 with Lucky Restart, Two Guesses, trivia and
 - Confirmation dialogs, trivia answers, and backgrounds use semantic colors for light/dark mode. Square transitions respect Reduce Motion. Both boards provide labeled accessibility elements.
 - New `GameInterface.swift` houses reusable dashboard, palette, notice, and rules components for future game screens. Existing navigation hosts the boards without an extra nested navigation stack.
 
-Validation: Swift syntax parsing and diff whitespace checks passed. Grid sizing was checked arithmetically over representative phone/tablet widths and board sizes. The UI has not been rendered or type-checked on Windows. Use the included SwiftUI previews and run the existing 21 regression tests in Xcode before release.
+Validation: Swift syntax parsing and diff whitespace checks passed. Grid sizing was checked arithmetically over representative phone/tablet widths and board sizes. Xcode 26.6 subsequently type-checked the app and passed the regression tests on GitHub Actions. Manual visual verification remains pending; use the included SwiftUI previews or the TestFlight build.
 
 Visual checklist on Mac: small iPhone and iPad; portrait/landscape and split view; light/dark modes; large text and Reduce Motion; Squares boards with 2, 9, 25 and 100 tiles; all 250 Circles and a quadrant reveal; keyboard open in betting; long power-up descriptions; active bets, ad loading, wins/losses, and rapid result updates. Verify that circle targets and hints survive resizing and that rules, betting, and power-up sheets dismiss correctly.
+
+## TestFlight validation — September 27, 2026
+
+- GitHub Actions successfully compiled and ran the unit-test suites with Xcode 26.6.
+- The Mac compiler exposed two misplaced square-tap guards in the trivia callback and an obsolete `SwiftUICore` import. Both are fixed.
+- Version 2.2 (build 1) was archived with the existing FooWibble distribution certificate and a new app-specific provisioning profile, then successfully uploaded to Apple.
+- [Build, tests, and upload evidence](https://github.com/peytonlwhite/How-Lucky/actions/runs/36368386267).
+- Export reported missing vendor dSYM files for GoogleMobileAds and UserMessagingPlatform. Upload succeeded; crashes inside those vendor frameworks may have incomplete symbol names.
+- The encryption-exemption metadata matches the existing live build. The workflow uploads for internal testing only.
+- [Future upload instructions](docs/TESTFLIGHT.md). The device, upgrade, ad-flow, and visual checklists above remain necessary before an App Store release.
